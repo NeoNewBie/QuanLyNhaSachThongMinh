@@ -1,0 +1,11 @@
+# 1. Bỏ qua các file biên dịch
+build/
+dist/
+*.class
+*.war
+
+# 2. Bỏ qua cấu hình cá nhân của từng máy (Chặn luôn private.properties)
+nbproject/private/
+
+# 3. Bảo mật: Giấu các file chứa mật khẩu
+*.properties
