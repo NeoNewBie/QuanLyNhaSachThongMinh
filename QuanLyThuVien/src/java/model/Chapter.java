@@ -1,73 +1,68 @@
 package model;
 
+import java.util.List;
+
 public class Chapter {
     private int chapterID;
     private int bookID;
     private int chapterNumber;
     private String title;
     private String content;
+    private double price;
     private boolean isFree;
-
-    // Sếp tự tạo Getter/Setter và Constructor nhé
     
+    // --- 🛑 HAI BIẾN MỚI ĐỂ PHỤC VỤ CÀO TRUYỆN ---
+    private String sourceURL; // Lưu link từ NetTruyen, MangaDex...
+    private List<String> imageList; // Lưu danh sách link ảnh sau khi cào xong
+    
+    // --- 🛑 BIẾN ĐỂ KIỂM TRA TRẠNG THÁI KHÓA ---
+    private boolean unlocked; 
+
+    // Constructor không tham số
     public Chapter() {
     }
 
-    public Chapter(int chapterID, int bookID, int chapterNumber, String title, String content, boolean isFree) {
+    // Constructor đầy đủ (Sếp có thể dùng cái này để map từ Database)
+    public Chapter(int chapterID, int bookID, int chapterNumber, String title, String content, double price, boolean isFree, String sourceURL) {
         this.chapterID = chapterID;
         this.bookID = bookID;
         this.chapterNumber = chapterNumber;
         this.title = title;
         this.content = content;
+        this.price = price;
         this.isFree = isFree;
+        this.sourceURL = sourceURL;
     }
 
-    public int getChapterID() {
-        return chapterID;
-    }
+    // --- GETTER VÀ SETTER (BẮT BUỘC PHẢI CÓ ĐỦ) ---
 
-    public void setChapterID(int chapterID) {
-        this.chapterID = chapterID;
-    }
+    public int getChapterID() { return chapterID; }
+    public void setChapterID(int chapterID) { this.chapterID = chapterID; }
 
-    public int getBookID() {
-        return bookID;
-    }
+    public int getBookID() { return bookID; }
+    public void setBookID(int bookID) { this.bookID = bookID; }
 
-    public void setBookID(int bookID) {
-        this.bookID = bookID;
-    }
+    public int getChapterNumber() { return chapterNumber; }
+    public void setChapterNumber(int chapterNumber) { this.chapterNumber = chapterNumber; }
 
-    public int getChapterNumber() {
-        return chapterNumber;
-    }
+    public String getTitle() { return title; }
+    public void setTitle(String title) { this.title = title; }
 
-    public void setChapterNumber(int chapterNumber) {
-        this.chapterNumber = chapterNumber;
-    }
+    public String getContent() { return content; }
+    public void setContent(String content) { this.content = content; }
 
-    public String getTitle() {
-        return title;
-    }
+    public double getPrice() { return price; }
+    public void setPrice(double price) { this.price = price; }
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
+    public boolean isIsFree() { return isFree; } // Lưu ý: NetBeans hay sinh ra isIsFree
+    public void setIsFree(boolean isFree) { this.isFree = isFree; }
 
-    public String getContent() {
-        return content;
-    }
+    public String getSourceURL() { return sourceURL; }
+    public void setSourceURL(String sourceURL) { this.sourceURL = sourceURL; }
 
-    public void setContent(String content) {
-        this.content = content;
-    }
+    public List<String> getImageList() { return imageList; }
+    public void setImageList(List<String> imageList) { this.imageList = imageList; }
 
-    public boolean isIsFree() {
-        return isFree;
-    }
-
-    public void setIsFree(boolean isFree) {
-        this.isFree = isFree;
-    }
-    
+    public boolean isUnlocked() { return unlocked; }
+    public void setUnlocked(boolean unlocked) { this.unlocked = unlocked; }
 }

@@ -4,36 +4,143 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Quét Mã Thanh Toán</title>
+    <title>Thanh Toán Tự Động - Smart Lib</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        /* Nền Gradient hòa hợp, không gây rối mắt */
+        body {
+            background: linear-gradient(135deg, #173F5F 0%, #242424 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Inter', sans-serif;
+            color: #fff;
+            margin: 0;
+        }
+
+        /* Hiệu ứng kính mờ cho Card thanh toán */
+        .payment-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 30px;
+            padding: 40px;
+            width: 100%;
+            max-width: 450px;
+            text-align: center;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+        }
+
+        .qr-wrapper {
+            background: #fff;
+            padding: 15px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            position: relative;
+        }
+
+        .qr-wrapper img {
+            width: 250px;
+            height: 250px;
+            border-radius: 10px;
+        }
+
+        .price-tag {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #ED553B;
+            margin-bottom: 10px;
+        }
+
+        .status-loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            color: #aaa;
+            font-weight: 500;
+            margin-top: 20px;
+        }
+
+        /* Hiệu ứng mạch đập cho QR để báo hiệu hệ thống đang "thức" */
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.02); opacity: 0.8; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .qr-active { animation: pulse 2s infinite ease-in-out; }
+
+    </style>
 </head>
-<body style="background: #f8f9fa;">
-    <jsp:include page="header.jsp" />
-
-    <div class="container mt-5 mb-5">
-        <div class="row justify-content-center">
-            <div class="col-md-6">
-                <div class="card border-0 shadow-lg rounded-4 overflow-hidden text-center p-5">
-                    <h4 class="fw-bold mb-3 text-primary">THANH TOÁN CHUYỂN KHOẢN</h4>
-                    <p class="text-muted">Vui lòng quét mã QR bên dưới để thanh toán cho Đơn hàng Sách Giấy của bạn.</p>
-                    
-                    <h2 class="text-danger fw-bold my-4"><fmt:formatNumber value="${totalAmount}" pattern="###,###"/> đ</h2>
-                    
-                    <div class="p-3 bg-white border rounded-4 d-inline-block shadow-sm mx-auto mb-4">
-                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=ThanhToanSachGiay-${totalAmount}" alt="QR Code">
-                    </div>
-                    
-                    <div class="alert alert-warning small">
-                        <strong>Lưu ý:</strong> Sau khi chuyển khoản thành công, Admin sẽ kiểm tra và xác nhận đơn hàng của bạn trong phần Lịch sử Đơn Hàng.
-                    </div>
-
-                    <a href="orders" class="btn btn-success w-100 py-3 rounded-pill fw-bold shadow mt-3">
-                        <i class="bi bi-check-circle-fill me-2"></i> TÔI ĐÃ CHUYỂN KHOẢN XONG
-                    </a>
-                </div>
-            </div>
+<body>
+    <div class="payment-card shadow-lg">
+        <div class="mb-4">
+            <h4 class="fw-bold mb-1">MỞ KHÓA TRUYỆN VIP</h4>
+            <p class="small text-muted">Hệ thống tự động duyệt sau 3-5 giây</p>
         </div>
+
+        <div class="price-tag">
+            <fmt:formatNumber value="${totalAmount}" pattern="###,###"/> đ
+        </div>
+
+        <div class="qr-wrapper qr-active">
+            <img src="https://img.vietqr.io/image/MB-0869720489-compact2.png?amount=${totalAmount}&addInfo=${orderId}&accountName=LE%20HOANG%20HAI" 
+                 alt="Quét mã để đọc truyện">
+        </div>
+
+        <div class="status-loading" id="payment-checker">
+            <div class="spinner-grow spinner-grow-sm text-warning" role="status"></div>
+            <span>Đang chờ sếp chuyển khoản...</span>
+        </div>
+
+        <div class="mt-4 pt-3 border-top border-secondary">
+            <p class="small text-muted mb-0">Nội dung chuyển khoản:</p>
+            <p class="fw-bold text-warning">${orderId}</p>
+        </div>
+        
+        <a href="book-detail?id=${detail.id}" class="btn btn-link btn-sm text-decoration-none text-muted mt-3">Hủy thanh toán</a>
     </div>
+
+    <script>
+        // Tuyệt đối không có nút bấm, dùng Script để soi tiền tự động
+        const orderId = "${orderId}";
+        const bookId = "${detail.id}";
+        
+        const checkPayment = setInterval(function() {
+            fetch('check-payment-status?orderId=' + encodeURIComponent(orderId))
+                .then(res => res.text())
+                .then(status => {
+                    if (status.trim() === "success") {
+                        // Dừng kiểm tra ngay khi thấy tiền vào
+                        clearInterval(checkPayment);
+                        
+                        // Cập nhật UI báo thành công trước khi nhảy trang
+                        document.getElementById('payment-checker').innerHTML = 
+                            '<i class="bi bi-check-circle-fill text-success fs-4"></i> <span class="text-success fw-bold">Giao dịch thành công!</span>';
+
+                        // Nổ Ting Ting đẹp mắt bằng SweetAlert2
+                        Swal.fire({
+                            title: 'Ting Ting!',
+                            text: 'Smart Lib đã nhận được tiền. Đọc truyện thôi sếp Hải ơi!',
+                            icon: 'success',
+                            background: '#242424',
+                            color: '#fff',
+                            showConfirmButton: false,
+                            timer: 2500,
+                            timerProgressBar: true
+                        }).then(() => {
+                            // Tự động đá sếp về trang đọc truyện ngay lập tức
+                            window.location.href = "read?id=" + bookId;
+                        });
+                    }
+                })
+                .catch(err => console.log("Hệ thống đang bận, sếp đợi xíu..."));
+        }, 3000); // 3 giây soi một lần
+    </script>
 </body>
 </html>

@@ -19,23 +19,25 @@ public class ShopServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
-        request.setCharacterEncoding("UTF-8"); // 🛑 Rất quan trọng để tìm tiếng Việt
+        request.setCharacterEncoding("UTF-8"); 
         
         BookDAO dao = new BookDAO();
         CategoryDAO cdao = new CategoryDAO();
         
-        // 1. Lấy TẤT CẢ tham số từ giao diện gửi lên
+        // 1. Lấy tất cả tham số từ request
         String cate = request.getParameter("category"); 
-        String txt = request.getParameter("txt");       // Tên sách (từ thanh tìm kiếm)
-        String minPrice = request.getParameter("min");  // Giá từ
-        String maxPrice = request.getParameter("max");  // Giá đến
-        String[] cateIds = request.getParameterValues("cateId"); // Checkbox thể loại
-        String sort = request.getParameter("sort");     // 🛑 Tham số Sắp xếp (MỚI)
+        String txt = request.getParameter("txt");       
+        String minPrice = request.getParameter("min");  
+        String maxPrice = request.getParameter("max");  
+        String[] cateIds = request.getParameterValues("cateId"); 
+        String sort = request.getParameter("sort");     
         String pStr = request.getParameter("page");     
         
         int pageSize = 9; 
         int pageIndex = 1;
-        if (pStr != null) pageIndex = Integer.parseInt(pStr);
+        try {
+            if (pStr != null) pageIndex = Integer.parseInt(pStr);
+        } catch (Exception e) { pageIndex = 1; }
         
         List<Book> list = null;
         String title = "Tất Cả Sách";
@@ -43,19 +45,26 @@ public class ShopServlet extends HttpServlet {
         boolean isDefault = false;
 
         // 2. LOGIC LỌC NÂNG CAO & TÌM KIẾM
-        // Nếu có nhập tên, hoặc nhập giá, hoặc có yêu cầu sắp xếp -> Gọi hàm searchAdvanced
-        if ((txt != null && !txt.isEmpty()) || (minPrice != null && !minPrice.isEmpty()) || (maxPrice != null && !maxPrice.isEmpty()) || cateIds != null || sort != null) {
-            
-            // 🛑 Đã cập nhật hàm searchAdvanced thêm tham số 'sort'
-            list = dao.searchAdvanced(txt, cateIds, minPrice, maxPrice, sort);
+        // Kiểm tra xem khách có đang dùng thanh tìm kiếm, lọc giá, lọc thể loại hay sắp xếp không
+        boolean isSearching = (txt != null && !txt.isEmpty()) 
+                            || (minPrice != null && !minPrice.isEmpty()) 
+                            || (maxPrice != null && !maxPrice.isEmpty()) 
+                            || (cateIds != null && cateIds.length > 0) 
+                            || sort != null;
+
+        if (isSearching) {
+            // 🛑 FIX LỖI: Thêm tham số 'null' vào cuối vì hàm searchAdvanced của anh em mình giờ cần 6 tham số
+            // Tham số thứ 6 (isFeatured) để null nghĩa là tìm kiếm chung, không ép buộc chỉ lấy sách nổi bật
+            list = dao.searchAdvanced(txt, cateIds, minPrice, maxPrice, sort, null);
             title = "Kết quả tìm kiếm & lọc";
-            
         } 
-        // 3. LOGIC THEO MENU (Các mục định sẵn)
+        // 3. LOGIC THEO MENU
         else if ("new".equals(cate)) {
             list = dao.getNewBooks();
             title = "Sách Mới Cập Nhật";
         } else if ("featured".equals(cate)) {
+            // Sếp cũng có thể dùng luôn hàm searchAdvanced ở đây cho đồng bộ:
+            // list = dao.searchAdvanced(null, null, null, null, null, true);
             list = dao.getFeaturedBooks();
             title = "Sách Nổi Bật";
         } else if ("hot".equals(cate)) {
@@ -68,14 +77,14 @@ public class ShopServlet extends HttpServlet {
             list = dao.getEbooks();
             title = "Truyện Online Đặc Sắc";
         } else {
-            // Mặc định: Hiện tất cả và phân trang từ SQL
+            // Mặc định: Phân trang trực tiếp từ SQL (Rất nhanh)
             list = dao.getBooksByPage(pageIndex, pageSize);
             totalBooks = dao.countTotalBooks();
             title = "Tất Cả Sách";
             isDefault = true;
         }
 
-        // 4. XỬ LÝ PHÂN TRANG (Cho kết quả lọc)
+        // 4. XỬ LÝ PHÂN TRANG CHO KẾT QUẢ TÌM KIẾM (SubList)
         if (!isDefault && list != null) {
             totalBooks = list.size();
             int start = (pageIndex - 1) * pageSize;
@@ -88,18 +97,17 @@ public class ShopServlet extends HttpServlet {
             }
         }
 
-        // 5. Gửi dữ liệu ra giao diện
-        List<Category> listCC = cdao.getAll();
+        // 5. Gửi dữ liệu ra JSP
         int totalPages = (int) Math.ceil((double)totalBooks / pageSize);
         
         request.setAttribute("listB", list);      
-        request.setAttribute("listCC", listCC);   
+        request.setAttribute("listCC", cdao.getAll());   
         request.setAttribute("pageTitle", title);
         request.setAttribute("currentPage", pageIndex);
         request.setAttribute("totalPages", totalPages);
         request.setAttribute("activeCate", cate);
         
-        // 🛑 Lưu lại các giá trị khách vừa nhập để không bị mất khi load lại trang
+        // Giữ lại các giá trị khách đã nhập để hiện lên thanh tìm kiếm/lọc
         request.setAttribute("txtS", txt);
         request.setAttribute("minS", minPrice);
         request.setAttribute("maxS", maxPrice);

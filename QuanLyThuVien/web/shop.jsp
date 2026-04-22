@@ -18,7 +18,6 @@
         .cate-item { display: block; padding: 10px 15px; color: #555; font-weight: 600; font-size: 0.95rem; border-radius: 8px; text-decoration: none; margin-bottom: 5px; transition: 0.3s; }
         .cate-item:hover { color: #ED553B; background: #fffcfb; padding-left: 20px; }
         
-        /* CỰC QUAN TRỌNG: Hiệu ứng Active cho menu */
         .cate-item.active-cate { 
             color: #ED553B; 
             background: #FFF5F3; 
@@ -27,13 +26,11 @@
         }
 
         /* 🛑 2. CUSTOM SCROLLBAR CHO LIVE SEARCH & BỘ LỌC */
-        /* Thanh cuộn cho khung kết quả tìm kiếm */
         #searchSuggestions::-webkit-scrollbar { width: 6px; }
         #searchSuggestions::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 8px; }
         #searchSuggestions::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 8px; }
         #searchSuggestions::-webkit-scrollbar-thumb:hover { background: #ED553B; }
         
-        /* Thanh cuộn cho menu thể loại (nếu quá dài) */
         .custom-scroll::-webkit-scrollbar { width: 4px; }
         .custom-scroll::-webkit-scrollbar-track { background: transparent; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #e0e0e0; border-radius: 10px; }
@@ -47,8 +44,21 @@
         .content-box { padding: 20px; flex-grow: 1; display: flex; flex-direction: column;}
         .book-title { font-size: 1rem; font-weight: 700; color: #222; margin-bottom: 8px; height: 2.8rem; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; transition: 0.2s;}
         .book-title:hover { color: #ED553B; }
-        .book-author { font-size: 0.8rem; color: #999; margin-bottom: 15px; }
+        .book-author { font-size: 0.8rem; color: #999; margin-bottom: 10px; }
         .book-price { font-size: 1.1rem; font-weight: 800; color: #ED553B; }
+
+        /* 🛑 NHÃN KHỚP CHƯƠNG (MỚI THÊM) */
+        .matched-chapter {
+            background-color: #FFF5F3;
+            color: #e03131;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            display: inline-block;
+            margin-bottom: 12px;
+            border: 1px dashed #ffa8a8;
+            font-weight: 700;
+        }
 
         .btn-detail { display: block; text-align: center; text-decoration: none; background: #F1F3F4; color: #222; font-weight: 700; font-size: 0.85rem; border-radius: 8px; border: none; padding: 12px; width: 100%; transition: 0.3s;}
         .btn-detail:hover { background: #173F5F; color: #fff; }
@@ -73,27 +83,23 @@
 
     <div class="container mt-4 mb-5">
         
-        <%-- 🛑 TOP BAR: TÌM KIẾM & SẮP XẾP --%>
+        <%-- 🛑 TOP BAR --%>
         <div class="row mb-4 align-items-center bg-white p-3 rounded-4 shadow-sm border mx-0">
-            <%-- THANH TÌM KIẾM LIVE SEARCH --%>
             <div class="col-md-8 position-relative mb-3 mb-md-0">
                 <form action="shop" method="GET" class="input-group" id="searchForm">
                     <span class="input-group-text bg-light border-end-0 rounded-start-pill text-muted px-4">
                         <i class="bi bi-search"></i>
                     </span>
-                    <%-- Nhớ giữ lại chữ khách đã search bằng value="${txtS}" --%>
                     <input type="text" name="txt" id="liveSearchInput" class="form-control bg-light border-start-0 py-3 fw-bold text-primary-custom" 
                            placeholder="Sếp muốn tìm sách gì hôm nay?" autocomplete="off" value="${txtS}">
                     <button type="submit" class="btn btn-dark rounded-end-pill px-5 fw-bold">TÌM KIẾM</button>
                 </form>
                 
-                <%-- Khung chứa kết quả AJAX (Đã CSS thanh cuộn) --%>
                 <div id="searchSuggestions" class="position-absolute w-100 bg-white shadow-lg rounded-4 mt-2 border" 
                      style="display: none; z-index: 1050; max-height: 400px; overflow-y: auto; top: 100%;">
                 </div>
             </div>
 
-            <%-- SẮP XẾP THÔNG MINH --%>
             <div class="col-md-4">
                 <div class="d-flex align-items-center justify-content-end gap-2">
                     <span class="fw-bold text-muted small text-nowrap">SẮP XẾP:</span>
@@ -107,11 +113,9 @@
         </div>
 
         <div class="row g-4">
-            <%-- SIDEBAR BÊN TRÁI --%>
+            <%-- SIDEBAR --%>
             <div class="col-lg-3">
                 <div class="sidebar-filter shadow-sm">
-                    
-                    <%-- THỂ LOẠI (Có active state) --%>
                     <div class="mb-5">
                         <h5 class="filter-section-title"><i class="bi bi-grid me-2"></i>Danh Mục Sách</h5>
                         <div class="custom-scroll" style="max-height: 350px; overflow-y: auto; padding-right: 5px;">
@@ -119,7 +123,6 @@
                                 <i class="bi bi-book me-2"></i> Tất cả sách
                             </a>
                             <c:forEach items="${listCC}" var="c">
-                                <%-- Bắt ID đang trên URL để thêm class active-cate --%>
                                 <a href="shop?cateId=${c.id}" class="cate-item ${param.cateId == c.id ? 'active-cate' : ''}">
                                     <i class="bi bi-hash me-1"></i> ${c.name}
                                 </a>
@@ -127,7 +130,6 @@
                         </div>
                     </div>
 
-                    <%-- MỨC GIÁ (Bỏ nhập tay, dùng nút click như Tiki) --%>
                     <div class="mb-4">
                         <h5 class="filter-section-title"><i class="bi bi-cash-coin me-2"></i>Mức Giá</h5>
                         <div class="d-flex flex-column gap-2">
@@ -143,7 +145,6 @@
                         </div>
                     </div>
 
-                    <%-- NÚT XÓA LỌC --%>
                     <c:if test="${not empty param.cateId or not empty param.min or not empty txtS}">
                         <a href="shop" class="btn btn-outline-danger w-100 fw-bold rounded-pill mb-4">
                             <i class="bi bi-x-circle me-1"></i> XÓA BỘ LỌC
@@ -157,7 +158,7 @@
                 </div>
             </div>
 
-            <%-- CONTENT BÊN PHẢI --%>
+            <%-- CONTENT --%>
             <div class="col-lg-9">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h4 class="fw-bold m-0" style="color: #173F5F; text-transform: uppercase;">
@@ -165,7 +166,6 @@
                     </h4>
                 </div>
 
-                <%-- DANH SÁCH CARD SÁCH CỦA SẾP --%>
                 <div class="row g-4">
                     <c:forEach items="${listB}" var="b">
                         <div class="col-md-4 col-sm-6">
@@ -181,6 +181,13 @@
                                     <a href="book-detail?id=${b.id}" class="text-decoration-none">
                                         <h6 class="book-title" title="${b.title}">${b.title}</h6>
                                     </a>
+
+                                    <%-- 🛑 ĐÂY LÀ ĐOẠN UPDATE: HIỂN THỊ TÊN CHƯƠNG KHỚP --%>
+                                    <c:if test="${not empty b.description}">
+                                        <div class="matched-chapter">
+                                            <i class="bi bi-magic"></i> Khớp: "${b.description}"
+                                        </div>
+                                    </c:if>
                                     
                                     <div class="d-flex justify-content-between align-items-center mb-3">
                                         <span class="book-price"><fmt:formatNumber value="${b.price}" pattern="###,###"/> đ</span>
@@ -198,18 +205,16 @@
                         </div>
                     </c:forEach>
                     
-                    <%-- NẾU KHÔNG CÓ SÁCH NÀO --%>
                     <c:if test="${empty listB}">
                         <div class="col-12 text-center py-5">
                             <i class="bi bi-emoji-frown display-1 text-muted opacity-50 mb-3 d-block"></i>
                             <h4 class="text-muted fw-bold">Không tìm thấy cuốn sách nào sếp ơi!</h4>
-                            <p class="text-secondary">Thử thay đổi từ khóa hoặc bộ lọc xem sao nhé.</p>
                             <a href="shop" class="btn btn-primary mt-3 rounded-pill px-4">Tải lại trang</a>
                         </div>
                     </c:if>
                 </div>
 
-                <%-- GIAO DIỆN PHÂN TRANG HÌNH TRÒN --%>
+                <%-- PHÂN TRANG --%>
                 <c:if test="${totalPages > 1}">
                     <nav aria-label="Page navigation">
                         <ul class="custom-pagination">
@@ -237,7 +242,6 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
-    // 1. Thêm giỏ hàng (Giữ nguyên)
     function addToCartAsync(event, bookId) {
         if(event) event.preventDefault(); 
         fetch('add-to-cart-async?id=' + bookId)
@@ -249,29 +253,24 @@
             }).catch(error => console.error('Lỗi AJAX:', error));
     }
 
-    // 🛑 2. HỆ THỐNG LIVE SEARCH + LỊCH SỬ TÌM KIẾM + TỪ KHÓA HOT
     let searchTimeout = null;
     const searchInput = document.getElementById('liveSearchInput');
     const suggestionsBox = document.getElementById('searchSuggestions');
     const searchForm = document.getElementById('searchForm');
 
     if(searchInput) {
-        // --- Hàm lưu Lịch sử vào LocalStorage ---
         function saveSearchHistory(query) {
             if(!query) return;
             let history = JSON.parse(localStorage.getItem('smartLibHistory') || '[]');
-            history = history.filter(item => item !== query); // Xóa trùng lặp
-            history.unshift(query); // Đẩy lên đầu
-            if(history.length > 5) history.pop(); // Chỉ giữ 5 từ khóa gần nhất
+            history = history.filter(item => item !== query);
+            history.unshift(query);
+            if(history.length > 5) history.pop();
             localStorage.setItem('smartLibHistory', JSON.stringify(history));
         }
 
-        // --- Hàm hiển thị Gợi ý mặc định (Lịch sử + Hot trend) ---
         window.showDefaultSuggestions = function() {
             let history = JSON.parse(localStorage.getItem('smartLibHistory') || '[]');
             let html = '<div class="p-3">';
-
-            // Phần Lịch sử
             if(history.length > 0) {
                 html += '<div class="d-flex justify-content-between align-items-center mb-2"><span class="fw-bold text-muted small">🕒 LỊCH SỬ TÌM KIẾM</span> <span class="text-danger small fw-bold" style="cursor:pointer;" onclick="clearHistory()">Xóa</span></div>';
                 html += '<div class="d-flex flex-wrap gap-2 mb-3">';
@@ -280,8 +279,6 @@
                 });
                 html += '</div>';
             }
-
-            // Phần Từ khóa Hot (Giải quyết vấn đề khách không biết tìm gì)
             html += '<div class="fw-bold text-muted small mb-2 mt-2">🔥 TỪ KHÓA XU HƯỚNG</div>';
             html += '<div class="d-flex flex-wrap gap-2">';
             const hotTags = ['Java', 'Kỹ năng', 'Tâm lý', 'Lập trình web', 'C#', 'SQL'];
@@ -289,36 +286,28 @@
                 html += `<a href="shop?txt=\${encodeURIComponent(tag)}" class="badge bg-danger-subtle text-danger border border-danger-subtle text-decoration-none px-3 py-2 rounded-pill">\${tag}</a>`;
             });
             html += '</div></div>';
-
             suggestionsBox.innerHTML = html;
             suggestionsBox.style.display = 'block';
         };
 
-        // --- Hàm xóa lịch sử ---
         window.clearHistory = function() {
             localStorage.removeItem('smartLibHistory');
-            showDefaultSuggestions(); // Render lại
+            showDefaultSuggestions();
         };
 
-        // --- Bắt sự kiện khi khách CLICK vào ô tìm kiếm ---
         searchInput.addEventListener('focus', function() {
             if (this.value.trim().length === 0) {
                 showDefaultSuggestions();
             }
         });
 
-        // --- Bắt sự kiện khi khách GÕ CHỮ ---
         searchInput.addEventListener('input', function() {
             clearTimeout(searchTimeout);
             const query = this.value.trim();
-
-            // Nếu xóa hết chữ, quay lại màn hình gợi ý
             if (query.length === 0) {
                 showDefaultSuggestions();
                 return;
             }
-
-            // Đang gõ chữ -> Gọi Ajax tìm sách
             searchTimeout = setTimeout(() => {
                 fetch('live-search?q=' + encodeURIComponent(query))
                     .then(response => response.json())
@@ -346,13 +335,11 @@
             }, 300);
         });
 
-        // --- Bắt sự kiện khi nhấn nút TÌM KIẾM (Form Submit) ---
         searchForm.addEventListener('submit', function() {
             const query = searchInput.value.trim();
             saveSearchHistory(query);
         });
 
-        // --- Ẩn khi bấm ra ngoài ---
         document.addEventListener('click', function(e) {
             if (!searchInput.contains(e.target) && !suggestionsBox.contains(e.target)) {
                 suggestionsBox.style.display = 'none';

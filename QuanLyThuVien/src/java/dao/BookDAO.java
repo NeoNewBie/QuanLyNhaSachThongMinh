@@ -24,29 +24,22 @@ public class BookDAO {
     }
 
     public Book getBookById(String id) {
-        String query = "SELECT * FROM Books WHERE BookID = ?";
-        try {
-            conn = new DBContext().getConnection();
-            ps = conn.prepareStatement(query);
-            ps.setString(1, id);
-            rs = ps.executeQuery();
+    String query = "SELECT * FROM Books WHERE BookID = ?";
+    try (java.sql.Connection conn = new utils.DBContext().getConnection();
+         java.sql.PreparedStatement ps = conn.prepareStatement(query)) {
+        ps.setString(1, id);
+        try (java.sql.ResultSet rs = ps.executeQuery()) {
             if (rs.next()) {
                 return new Book(
-                    rs.getInt("BookID"),
-                    rs.getString("Title"),
-                    rs.getString("Author"),
-                    rs.getDouble("Price"),
-                    rs.getString("CoverImage"),
-                    rs.getString("Description"),
-                    rs.getInt("IsEbook"),
-                    rs.getInt("Stock") 
+                    rs.getInt("BookID"), rs.getString("Title"), rs.getString("Author"),
+                    rs.getDouble("Price"), rs.getString("CoverImage"), rs.getString("Description"),
+                    rs.getInt("IsEbook"), rs.getInt("Stock")
                 );
             }
-        } catch (Exception e) { e.printStackTrace(); }
-        finally { close(); }
-        return null;
-    }
-
+        }
+    } catch (Exception e) { e.printStackTrace(); }
+    return null;
+}
     public List<Book> getTop4Newest() {
         String query = "SELECT TOP 4 * FROM Books WHERE IsEbook = 0 ORDER BY BookID DESC";
         return getListByQuery(query);
@@ -69,40 +62,49 @@ public class BookDAO {
     }
 
     public int countTotalBooks() {
-        String query = "SELECT COUNT(*) FROM Books";
-        try {
-            conn = new DBContext().getConnection();
-            ps = conn.prepareStatement(query);
-            rs = ps.executeQuery();
-            if (rs.next()) return rs.getInt(1);
-        } catch (Exception e) {} finally { close(); }
-        return 0;
-    }
+    String query = "SELECT COUNT(*) FROM Books";
+    try {
+        conn = new utils.DBContext().getConnection();
+        ps = conn.prepareStatement(query);
+        rs = ps.executeQuery();
+        if (rs.next()) return rs.getInt(1);
+    } catch (Exception e) { e.printStackTrace(); }
+    return 0;
+}
 
+    // ==========================================
+    // 🛑 ĐÃ ĐỘ LẠI: TÌM CẢ TÊN SÁCH VÀ TÊN CHƯƠNG TRUYỆN
+    // ==========================================
     public List<model.Book> searchByName(String txt) {
         List<model.Book> list = new java.util.ArrayList<>();
-        String query = "SELECT * FROM Books WHERE Title COLLATE SQL_Latin1_General_CP1_CI_AI LIKE ?";
+        String query = "SELECT b.*, (SELECT TOP 1 Title FROM Chapters WHERE BookID = b.BookID AND Title LIKE ?) as MatchedChapter "
+                     + "FROM Books b "
+                     + "WHERE b.Title COLLATE SQL_Latin1_General_CP1_CI_AI LIKE ? "
+                     + "   OR EXISTS (SELECT 1 FROM Chapters WHERE BookID = b.BookID AND Title COLLATE SQL_Latin1_General_CP1_CI_AI LIKE ?)";
         try {
             conn = new utils.DBContext().getConnection();
             ps = conn.prepareStatement(query);
-            ps.setString(1, "%" + txt + "%"); 
+            String p = "%" + txt + "%";
+            ps.setString(1, p);
+            ps.setString(2, p);
+            ps.setString(3, p);
             rs = ps.executeQuery();
             while (rs.next()) {
                 model.Book b = new model.Book();
                 b.setId(rs.getInt("BookID"));
                 b.setTitle(rs.getString("Title"));
-                b.setAuthor(rs.getString("Author"));
+                b.setAuthor(rs.getString("Author")); // 🛑 Thêm Author
                 b.setPrice(rs.getDouble("Price"));
                 b.setCoverImage(rs.getString("CoverImage"));
-                b.setIsEbook(rs.getInt("IsEbook"));
+                b.setIsEbook(rs.getInt("IsEbook"));   // 🛑 Thêm IsEbook
+                b.setStock(rs.getInt("Stock"));       // 🛑 Thêm Stock
+                b.setDescription(rs.getString("MatchedChapter")); // Tên chương khớp
                 list.add(b);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        } catch (Exception e) { e.printStackTrace(); }
+        finally { close(); }
         return list;
     }
-
     public boolean insertBorrow(int userID, int bookID, String returnDate) {
         String query = "INSERT INTO Borrows (UserID, BookID, ReturnDate, Status) VALUES (?, ?, ?, N'Pending')";
         try {
@@ -116,28 +118,6 @@ public class BookDAO {
             e.printStackTrace();
         }
         return false;
-    }
-
-    public List<Borrow> getBorrowHistory(int userId) {
-        List<Borrow> list = new ArrayList<>();
-        String query = "SELECT b.BorrowID, bk.Title, b.BorrowDate, b.ReturnDate, b.Status "
-                     + "FROM Borrows b JOIN Books bk ON b.BookID = bk.BookID WHERE b.UserID = ?";
-        try {
-            conn = new utils.DBContext().getConnection();
-            ps = conn.prepareStatement(query);
-            ps.setInt(1, userId);
-            rs = ps.executeQuery();
-            while (rs.next()) {
-                list.add(new Borrow(
-                    rs.getInt(1), 
-                    rs.getString(2), 
-                    rs.getDate(3), 
-                    rs.getDate(4), 
-                    rs.getString(5)
-                ));
-            }
-        } catch (Exception e) { e.printStackTrace(); }
-        return list;
     }
 
     public boolean checkUserPurchased(int userId, int bookId) {
@@ -208,8 +188,8 @@ public class BookDAO {
     }
 
     public List<Book> getNewBooks() {
-        String query = "SELECT TOP 8 BookID, title, author, price, coverImage, description, isEbook " +
-                       "FROM Books ORDER BY ReleaseDate DESC";
+        String query = "SELECT TOP 8 BookID, title, author, price, coverImage, description, isEbook, Stock " + 
+               "FROM Books ORDER BY ReleaseDate DESC";
         return getListByQuery(query);
     }
 
@@ -219,18 +199,15 @@ public class BookDAO {
     }
 
     public List<Book> getMostViewedBooks() {
-        String query = "SELECT TOP 8 BookID, title, author, price, coverImage, description, isEbook " +
-                       "FROM Books ORDER BY ViewCount DESC";
+        String query = "SELECT TOP 8 BookID, title, author, price, coverImage, description, isEbook, Stock " + 
+               "FROM Books ORDER BY ViewCount DESC";
         return getListByQuery(query);
     }
 
     public List<Book> getBestSellerBooks() {
-        String query = "SELECT TOP 8 b.BookID, b.title, b.author, b.price, b.coverImage, b.description, b.isEbook " +
-                       "FROM Books b " +
-                       "JOIN OrderDetails od ON b.BookID = od.BookID " + 
-                       "GROUP BY b.BookID, b.title, b.author, b.price, b.coverImage, b.description, b.isEbook " +
-                       "ORDER BY SUM(od.Quantity) DESC";
-        return getListByQuery(query);
+    String query = "SELECT TOP 8 BookID, Title, Author, Price, CoverImage, Description, IsEbook, Stock " + 
+                   "FROM Books ORDER BY ViewCount DESC"; 
+    return getListByQuery(query);
     }
 
     public List<Book> getEbooks() {
@@ -238,59 +215,73 @@ public class BookDAO {
         return getListByQuery(query);
     }
 
-    public List<Book> searchAdvanced(String txt, String[] cateIds, String min, String max, String sort) {
+    // ==========================================
+    // 🛑 ĐÃ ĐỘ LẠI ADVANCED SEARCH: Hỗ trợ tìm tên Chương
+    // ==========================================
+    public List<Book> searchAdvanced(String txt, String[] cateIds, String min, String max, String sort, Boolean isFeatured) {
     List<Book> list = new ArrayList<>();
-    StringBuilder sql = new StringBuilder("SELECT b.* FROM Books b LEFT JOIN Categories c ON b.CategoryID = c.CategoryID WHERE 1=1 ");
+    List<Object> params = new ArrayList<>();
+    // SQL khởi đầu an toàn với 1=1
+    StringBuilder sql = new StringBuilder("SELECT DISTINCT b.* FROM Books b "
+            + "LEFT JOIN Categories c ON b.CategoryID = c.CategoryID "
+            + "LEFT JOIN Chapters ch ON b.BookID = ch.BookID WHERE 1=1 ");
 
-    if (txt != null && !txt.isEmpty()) {
-        // 🛑 ĐÃ SỬA: Đổi c.name thành c.CategoryName
-        sql.append(" AND (b.Title COLLATE SQL_Latin1_General_CP1_CI_AI LIKE N'%").append(txt).append("%' ");
-        sql.append(" OR c.CategoryName COLLATE SQL_Latin1_General_CP1_CI_AI LIKE N'%").append(txt).append("%') ");
+    if (txt != null && !txt.trim().isEmpty()) {
+        sql.append(" AND (b.Title COLLATE SQL_Latin1_General_CP1_CI_AI LIKE ? ");
+        sql.append(" OR ch.Title COLLATE SQL_Latin1_General_CP1_CI_AI LIKE ? ");
+        sql.append(" OR c.CategoryName COLLATE SQL_Latin1_General_CP1_CI_AI LIKE ?) ");
+        String searchVal = "%" + txt.trim() + "%";
+        params.add(searchVal); params.add(searchVal); params.add(searchVal);
     }
-    
+
+    // FIX CHÍ MẠNG: Kiểm tra kỹ cateIds để không bị lỗi syntax near ')'
     if (cateIds != null && cateIds.length > 0) {
-        sql.append(" AND b.CategoryID IN (").append(String.join(",", cateIds)).append(") ");
+        StringBuilder inClause = new StringBuilder();
+        boolean hasValidId = false;
+        for (String id : cateIds) {
+            if (id != null && !id.trim().isEmpty()) {
+                if (hasValidId) inClause.append(",");
+                inClause.append("?");
+                params.add(id);
+                hasValidId = true;
+            }
+        }
+        if (hasValidId) {
+            sql.append(" AND b.CategoryID IN (").append(inClause).append(") ");
+        }
     }
-    
+
     if (min != null && !min.isEmpty()) {
-        sql.append(" AND b.Price >= ").append(min).append(" ");
+        sql.append(" AND b.Price >= ? ");
+        params.add(Double.parseDouble(min));
     }
     if (max != null && !max.isEmpty()) {
-        sql.append(" AND b.Price <= ").append(max).append(" ");
+        sql.append(" AND b.Price <= ? ");
+        params.add(Double.parseDouble(max));
+    }
+    if (isFeatured != null && isFeatured) {
+        sql.append(" AND b.IsFeatured = 1 "); //
     }
 
-    if ("priceAsc".equals(sort)) {
-        sql.append(" ORDER BY b.Price ASC");
-    } else if ("priceDesc".equals(sort)) {
-        sql.append(" ORDER BY b.Price DESC");
-    } else {
-        sql.append(" ORDER BY b.BookID DESC"); 
-    }
+    sql.append(" ORDER BY b.Price ").append("priceDesc".equals(sort) ? "DESC" : "ASC");
 
-    try {
-        conn = new utils.DBContext().getConnection();
-        ps = conn.prepareStatement(sql.toString());
-        rs = ps.executeQuery();
-        while (rs.next()) {
-            list.add(new Book(
-                rs.getInt("BookID"),
-                rs.getString("Title"),
-                rs.getString("Author"),
-                rs.getDouble("Price"),
-                rs.getString("CoverImage"),
-                rs.getString("Description"),
-                rs.getInt("IsEbook"),
-                rs.getInt("Stock") 
-            ));
+    try (java.sql.Connection conn = new utils.DBContext().getConnection();
+         java.sql.PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+        for (int i = 0; i < params.size(); i++) {
+            ps.setObject(i + 1, params.get(i));
         }
-    } catch (Exception e) { 
-        e.printStackTrace(); 
-    } finally {
-        try { if(rs != null) rs.close(); if(ps != null) ps.close(); if(conn != null) conn.close(); } catch(Exception ex) {}
-    }
+        try (java.sql.ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                list.add(new Book(
+                    rs.getInt("BookID"), rs.getString("Title"), rs.getString("Author"),
+                    rs.getDouble("Price"), rs.getString("CoverImage"), rs.getString("Description"),
+                    rs.getInt("IsEbook"), rs.getInt("Stock")
+                ));
+            }
+        }
+    } catch (Exception e) { e.printStackTrace(); }
     return list;
 }
-
     public List<model.Review> getReviewsByBookId(int bookId) {
         List<model.Review> list = new ArrayList<>();
         
@@ -317,7 +308,7 @@ public class BookDAO {
     }
 
     public List<Book> getNewEbooks() {
-        String query = "SELECT TOP 4 BookID, title, author, price, coverImage, description, isEbook " +
+        String query = "SELECT TOP 4 BookID, title, author, price, coverImage, description, isEbook, Stock " + 
                        "FROM Books WHERE IsEbook = 1 ORDER BY BookID DESC";
         return getListByQuery(query);
     }
@@ -340,33 +331,53 @@ public class BookDAO {
                 list.add(b);
             }
         } catch (Exception e) { e.printStackTrace(); }
+        finally { close(); }
         return list;
     }
 
+    // ==========================================
+    // 🛑 ĐÃ ĐỘ LẠI LIVE SEARCH: Hỗ trợ tìm tên Chương
+    // ==========================================
     public List<Book> getLiveSearchResults(String txt) {
-    List<Book> list = new ArrayList<>();
-    // 🛑 ĐÃ SỬA: Đổi c.name thành c.CategoryName cho khớp với DB của sếp
-    String query = "SELECT TOP 5 b.BookID, b.Title, b.Price, b.CoverImage " +
-                   "FROM Books b LEFT JOIN Categories c ON b.CategoryID = c.CategoryID " +
-                   "WHERE b.Title COLLATE SQL_Latin1_General_CP1_CI_AI LIKE N'%' + ? + '%' " +
-                   "   OR c.CategoryName COLLATE SQL_Latin1_General_CP1_CI_AI LIKE N'%' + ? + '%'";
-    try {
-        conn = new utils.DBContext().getConnection();
-        ps = conn.prepareStatement(query);
-        ps.setString(1, txt); 
-        ps.setString(2, txt); 
-        rs = ps.executeQuery();
-        while (rs.next()) {
-            Book b = new Book();
-            b.setId(rs.getInt("BookID"));
-            b.setTitle(rs.getString("Title"));
-            b.setPrice(rs.getDouble("Price"));
-            b.setCoverImage(rs.getString("CoverImage"));
-            list.add(b);
+        List<Book> list = new ArrayList<>();
+        // Tìm cả 3 bảng: Sách, Thể loại, Chương truyện
+        String query = "SELECT DISTINCT TOP 5 b.BookID, b.Title, b.Price, b.CoverImage " +
+                       "FROM Books b LEFT JOIN Categories c ON b.CategoryID = c.CategoryID " +
+                       "LEFT JOIN Chapters ch ON b.BookID = ch.BookID " +
+                       "WHERE b.Title COLLATE SQL_Latin1_General_CP1_CI_AI LIKE N'%' + ? + '%' " +
+                       "   OR c.CategoryName COLLATE SQL_Latin1_General_CP1_CI_AI LIKE N'%' + ? + '%' " +
+                       "   OR ch.Title COLLATE SQL_Latin1_General_CP1_CI_AI LIKE N'%' + ? + '%'";
+        try {
+            conn = new utils.DBContext().getConnection();
+            ps = conn.prepareStatement(query);
+            ps.setString(1, txt); 
+            ps.setString(2, txt); 
+            ps.setString(3, txt); // Dấu hỏi số 3 cho tên chương
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                Book b = new Book();
+                b.setId(rs.getInt("BookID"));
+                b.setTitle(rs.getString("Title"));
+                b.setPrice(rs.getDouble("Price"));
+                b.setCoverImage(rs.getString("CoverImage"));
+                list.add(b);
+            }
+        } catch (Exception e) { e.printStackTrace(); } 
+        finally { close(); } 
+        return list;
+    }
+    // Hàm dùng để CỘNG hoặc TRỪ số lượng tồn kho
+    public void updateStock(int bookId, int quantityToChange) {
+        // Nếu truyền quantityToChange là số âm (-) thì nó sẽ trừ kho
+        // Nếu truyền số dương (+) thì nó sẽ cộng kho
+        String query = "UPDATE Books SET Stock = Stock + ? WHERE BookID = ?";
+        try (java.sql.Connection conn = new utils.DBContext().getConnection();
+             java.sql.PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setInt(1, quantityToChange);
+            ps.setInt(2, bookId);
+            ps.executeUpdate();
+        } catch (Exception e) { 
+            e.printStackTrace(); 
         }
-    } catch (Exception e) { e.printStackTrace(); } 
-    finally { close(); } 
-    return list;
-}
-    
+    }
 }

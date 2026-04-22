@@ -17,18 +17,4 @@ public class DBContext {
         Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
         return DriverManager.getConnection(url, userID, password);
     }
-    
-    // Hàm test nhanh kết nối (Shift + F6 để chạy)
-    public static void main(String[] args) {
-        try {
-            System.out.println("Đang thử kết nối...");
-            DBContext db = new DBContext();
-            Connection conn = db.getConnection();
-            if (conn != null) {
-                System.out.println("🎉 Kết nối SQL Server thành công mĩ mãn!");
-            }
-        } catch (Exception e) {
-            System.out.println("❌ Kết nối thất bại. Lỗi: " + e.getMessage());
-        }
-    }
 }

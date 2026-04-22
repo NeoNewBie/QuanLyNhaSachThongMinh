@@ -65,7 +65,7 @@
                             <c:forEach items="${listOrders}" var="o">
                                 <tr>
                                     <td class="fw-bold">#ORD-${o.id}</td>
-                                    <td>USER-${o.userId}</td>
+                                    <td>USER-${o.userID}</td>
                                     <td>${o.orderDate}</td>
                                     <td class="text-danger fw-bold"><fmt:formatNumber value="${o.totalAmount}" type="number" pattern="###,###"/> đ</td>
                                     <td>
@@ -80,7 +80,7 @@
                                     </td>
                                     <td>
                                         <c:if test="${o.status != 'Đã giao'}">
-                                            <a href="${pageContext.request.contextPath}/admin/manage-orders?action=approve&id=${o.id}" class="btn btn-sm btn-outline-success">
+                                            <a href="${pageContext.request.contextPath}/manage-orders?action=approve&id=${o.id}" class="btn btn-sm btn-outline-success">
                                                 <i class="bi bi-check-circle"></i> Duyệt đơn
                                             </a>
                                         </c:if>

@@ -22,9 +22,11 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
-    <div class="container mt-5">
-        <h2 class="fw-bold text-primary-custom mb-4"><i class="bi bi-cart-check"></i> GIỎ HÀNG CỦA BẠN</h2>
-        <div class="card shadow-sm border-0">
+    <jsp:include page="header.jsp" />
+
+    <div class="container mt-5 mb-5">
+        <h2 class="fw-bold text-primary-custom mb-4"><i class="bi bi-cart-check"></i> GIỎ HÀNG CỦA HẢI</h2>
+        <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
             <div class="card-body p-0">
                 <table class="table table-hover mb-0 align-middle text-center">
                     <thead class="table-light text-primary-custom">
@@ -41,9 +43,8 @@
                         <c:if test="${sessionScope.cart != null && sessionScope.cart.items.size() > 0}">
                             <c:forEach items="${sessionScope.cart.items}" var="i">
                                 <tr>
-                                    <td><img src="${i.book.coverImage}" style="height: 80px; object-fit: contain;"></td>
+                                    <td><img src="${i.book.coverImage}" class="rounded shadow-sm" style="height: 80px; width: 60px; object-fit: cover;"></td>
                                     <td class="text-start fw-bold text-primary-custom">${i.book.title}</td>
-                                    <%-- 🛑 FIX GIÁ ĐƠN VỊ --%>
                                     <td class="text-danger fw-bold"><fmt:formatNumber value="${i.book.price}" pattern="###,###"/> đ</td>
                                     <td>
                                         <div class="qty-container shadow-sm">
@@ -52,42 +53,86 @@
                                             <button type="button" class="qty-btn" onclick="changeQty(${i.book.id}, 1)"><i class="bi bi-plus"></i></button>
                                         </div>
                                     </td>
-                                    <%-- 🛑 FIX THÀNH TIỀN --%>
-                                    <td class="text-danger fw-bold"><fmt:formatNumber value="${i.book.price * i.quantity}" pattern="###,###"/> đ</td>
-                                    <td><button type="button" onclick="confirmDelete(${i.book.id})" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i> Xóa</button></td>
+                                    <td class="text-danger fw-bold fs-5"><fmt:formatNumber value="${i.book.price * i.quantity}" pattern="###,###"/> đ</td>
+                                    <td>
+                                        <button type="button" onclick="confirmDelete(${i.book.id})" class="btn btn-sm btn-outline-danger rounded-pill px-3">
+                                            <i class="bi bi-trash"></i> Xóa
+                                        </button>
+                                    </td>
                                 </tr>
                             </c:forEach>
                         </c:if>
                     </tbody>
                 </table>
             </div>
+            
             <c:if test="${sessionScope.cart != null && sessionScope.cart.items.size() > 0}">
-                <div class="card-footer bg-white p-4 d-flex justify-content-between align-items-center">
-                    <a href="home" class="btn btn-outline-secondary px-4"><i class="bi bi-arrow-left"></i> Tiếp tục mua sách</a>
+                <div class="card-footer bg-white p-4 d-flex justify-content-between align-items-center border-top">
+                    <a href="home" class="btn btn-outline-secondary rounded-pill px-4"><i class="bi bi-arrow-left me-2"></i> Tiếp tục mua sách</a>
                     <div class="text-end">
                         <span class="fs-5 text-muted me-3">Tổng cộng:</span>
                         <span class="fs-3 fw-bold text-danger"><fmt:formatNumber value="${sessionScope.cart.totalMoney}" pattern="###,###"/> VNĐ</span>
                         <br>
-                        <button type="button" onclick="confirmCheckout()" class="btn btn-accent btn-lg mt-2 px-5 fw-bold text-uppercase">Thanh toán ngay</button>
+                        <button type="button" onclick="confirmCheckout()" 
+                                class="btn btn-lg mt-3 px-5 rounded-pill shadow-sm fw-bold text-uppercase text-white" 
+                                style="background-color: #ED553B; border: none; transition: 0.3s;"
+                                onmouseover="this.style.backgroundColor='#d64a31'" 
+                                onmouseout="this.style.backgroundColor='#ED553B'">
+                            Thanh toán ngay <i class="bi bi-arrow-right ms-2"></i>
+                        </button>
                     </div>
+                </div>
+            </c:if>
+            
+            <c:if test="${empty sessionScope.cart || sessionScope.cart.items.size() == 0}">
+                <div class="text-center py-5">
+                    <img src="https://cdn-icons-png.flaticon.com/512/1170/1170678.png" width="120" class="opacity-50 mb-3">
+                    <h5 class="text-muted fw-bold">Giỏ hàng trống trơn!</h5>
+                    <a href="shop" class="btn btn-primary rounded-pill mt-3 px-4">Đến cửa hàng ngay</a>
                 </div>
             </c:if>
         </div>
     </div>
+
+    <jsp:include page="footer.jsp" />
+
 <script>
     function changeQty(bookId, delta) {
         const input = document.getElementById('qty-' + bookId);
         let newQty = parseInt(input.value) + delta;
         if (newQty < 1) return;
-        // 🛑 GỌI UPDATE-CART SERVLET
+        
+        // Hiện thông báo Loading nhỏ lúc cập nhật giá
+        Swal.fire({
+            title: 'Đang tính tiền...',
+            allowOutsideClick: false,
+            showConfirmButton: false,
+            didOpen: () => { Swal.showLoading() }
+        });
+        
         window.location.href = 'update-cart?id=' + bookId + '&quantity=' + newQty;
     }
+
     function confirmDelete(bookId) {
-        Swal.fire({ title: 'Bạn có chắc chắn?', text: "Sách sẽ bị xóa khỏi giỏ!", icon: 'warning', showCancelButton: true, confirmButtonColor: '#ED553B', cancelButtonColor: '#173F5F', confirmButtonText: 'Xóa nó!', cancelButtonText: 'Hủy' }).then((result) => {
-            if (result.isConfirmed) window.location.href = 'remove-cart?id=' + bookId;
+        Swal.fire({ 
+            title: 'Hải có chắc chắn?', 
+            text: "Sách sẽ bị xóa khỏi giỏ!", 
+            icon: 'warning', 
+            showCancelButton: true, 
+            confirmButtonColor: '#ED553B', 
+            cancelButtonColor: '#173F5F', 
+            confirmButtonText: 'Xóa nó!', 
+            cancelButtonText: 'Hủy' 
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = 'remove-cart?id=' + bookId;
+            }
         });
     } 
-    function confirmCheckout() { window.location.href = 'checkout'; }
+
+    function confirmCheckout() { 
+        window.location.href = 'checkout'; 
+    }
 </script>
 </body>
 </html>

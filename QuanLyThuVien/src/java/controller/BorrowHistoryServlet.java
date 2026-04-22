@@ -1,6 +1,7 @@
 package controller;
 
-import dao.BookDAO; // Hoặc UserDAO tùy ông để hàm lấy lịch sử ở đâu
+import dao.BorrowDAO;
+import model.Borrow;
 import model.User;
 import java.io.IOException;
 import java.util.List;
@@ -21,18 +22,21 @@ public class BorrowHistoryServlet extends HttpServlet {
         HttpSession session = request.getSession();
         User acc = (User) session.getAttribute("acc");
 
-        // 1. Nếu chưa đăng nhập thì đá về trang Login
+        // 1. Kiểm tra đăng nhập
         if (acc == null) {
             response.sendRedirect("login.jsp");
             return;
         }
 
-        // 2. Lấy danh sách sách đang mượn từ Database (Hải kiểm tra lại hàm này trong DAO nhé)
-        // BookDAO dao = new BookDAO();
-        // List<Borrow> list = dao.getBorrowHistory(acc.getId());
-        // request.setAttribute("listB", list);
+        // 2. Lấy danh sách từ DAO
+        BorrowDAO dao = new BorrowDAO();
+        // Lấy lịch sử mượn của đúng ông Hải đang đăng nhập
+        List<Borrow> list = dao.getBorrowHistory(acc.getId()); 
+        
+        // 3. Đẩy list sang JSP
+        request.setAttribute("listB", list);
 
-        // 3. Đẩy giao diện ra (Lệnh này cực quan trọng để hết trắng trang)
+        // 4. Mở trang giao diện
         request.getRequestDispatcher("borrow-history.jsp").forward(request, response);
     }
 }

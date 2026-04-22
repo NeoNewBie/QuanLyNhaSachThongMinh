@@ -71,24 +71,24 @@ public class OrderDAO {
 
     // 3. Hàm lấy TẤT CẢ đơn hàng (Dùng cho ManageOrderServlet của Admin)
     public List<Order> getAllOrders() {
-        List<Order> list = new ArrayList<>();
-        String query = "SELECT * FROM Orders ORDER BY OrderDate DESC";
-        try {
-            conn = new DBContext().getConnection();
-            ps = conn.prepareStatement(query);
-            rs = ps.executeQuery();
-            while (rs.next()) {
-                list.add(new Order(
-                    rs.getInt("OrderID"),
-                    rs.getDate("OrderDate"), 
-                    rs.getDouble("TotalAmount"), 
-                    rs.getString("Status"), 
-                    rs.getInt("UserID")
-                ));
-            }
-        } catch (Exception e) { e.printStackTrace(); }
-        return list;
-    }
+    List<Order> list = new ArrayList<>();
+    String query = "SELECT * FROM Orders ORDER BY OrderDate DESC";
+    try {
+        conn = new utils.DBContext().getConnection();
+        ps = conn.prepareStatement(query);
+        rs = ps.executeQuery();
+        while (rs.next()) {
+            list.add(new Order(
+                rs.getInt("OrderID"),
+                rs.getDate("OrderDate"),
+                rs.getDouble("TotalAmount"),
+                rs.getString("Status"),
+                rs.getInt("UserID")
+            ));
+        }
+    } catch (Exception e) { e.printStackTrace(); }
+    return list;
+}
     // 4. Hàm cập nhật trạng thái (Dùng cho nút Duyệt đơn của Admin)
     // 4. Hàm cập nhật trạng thái (Dùng cho Hủy đơn & Admin duyệt đơn)
     public void updateOrderStatus(int id, String status) {
@@ -105,26 +105,26 @@ public class OrderDAO {
 
     // 5. Các hàm cho Admin Dashboard (Doanh thu, đếm đơn)
     public double getTotalRevenue() {
-        String query = "SELECT SUM(TotalAmount) FROM Orders";
-        try {
-            conn = new DBContext().getConnection();
-            ps = conn.prepareStatement(query);
-            rs = ps.executeQuery();
-            if (rs.next()) return rs.getDouble(1);
-        } catch (Exception e) {}
-        return 0;
-    }
+    String query = "SELECT SUM(TotalAmount) FROM Orders WHERE Status = N'Đã giao'";
+    try {
+        conn = new utils.DBContext().getConnection();
+        ps = conn.prepareStatement(query);
+        rs = ps.executeQuery();
+        if (rs.next()) return rs.getDouble(1);
+    } catch (Exception e) { e.printStackTrace(); }
+    return 0;
+}
 
     public int countTotalOrders() {
-        String query = "SELECT COUNT(*) FROM Orders";
-        try {
-            conn = new DBContext().getConnection();
-            ps = conn.prepareStatement(query);
-            rs = ps.executeQuery();
-            if (rs.next()) return rs.getInt(1);
-        } catch (Exception e) {}
-        return 0;
-    }
+    String query = "SELECT COUNT(*) FROM Orders";
+    try {
+        conn = new utils.DBContext().getConnection();
+        ps = conn.prepareStatement(query);
+        rs = ps.executeQuery();
+        if (rs.next()) return rs.getInt(1);
+    } catch (Exception e) { e.printStackTrace(); }
+    return 0;
+}
     // 6. Hàm lấy thông tin chung của 1 đơn hàng
     public Order getOrderById(int orderId) {
         String query = "SELECT * FROM Orders WHERE OrderID = ?";
@@ -241,5 +241,32 @@ private void closeConnections() {
     } catch (Exception e) {
         e.printStackTrace();
     }
+}
+// Hàm này để đổi trạng thái đơn hàng thành 'Đã giao'
+public boolean approveOrder(int orderId) {
+    String query = "UPDATE Orders SET status = N'Đã giao' WHERE id = ?";
+    try {
+        conn = new utils.DBContext().getConnection();
+        ps = conn.prepareStatement(query);
+        ps.setInt(1, orderId);
+        return ps.executeUpdate() > 0;
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+    return false;
+}
+public boolean checkIsPaid(String orderId) {
+    String query = "SELECT Status FROM Orders WHERE OrderID = ?";
+    try {
+        conn = new utils.DBContext().getConnection();
+        ps = conn.prepareStatement(query);
+        ps.setString(1, orderId);
+        rs = ps.executeQuery();
+        if (rs.next()) {
+            String status = rs.getString("Status");
+            return "2".equals(status) || "Đã giao".equals(status);
+        }
+    } catch (Exception e) {}
+    return false;
 }
 }

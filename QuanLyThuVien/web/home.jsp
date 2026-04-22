@@ -179,17 +179,19 @@
         
         // 🛑 CODE AJAX THÊM VÀO GIỎ HÀNG THẦN THÁNH NẰM Ở ĐÂY SẾP NHÉ
         function addToCartAsync(event, bookId) {
-            if(event) event.preventDefault(); // Ngăn trình duyệt nhảy trang
-            
-            fetch('add-to-cart-async?id=' + bookId)
-                .then(response => response.text())
+            if(event) event.preventDefault(); 
+
+            // ĐÃ ĐỔI SANG ADD-TO-CART KÈM AJAX=TRUE
+            fetch('add-to-cart?id=' + bookId + '&ajax=true')
+                .then(response => response.json()) // Nhận về JSON thay vì text
                 .then(data => {
                     const cartBadge = document.getElementById('cart-badge');
-                    if (cartBadge) cartBadge.innerText = data; // Update số đỏ trên header
-                    
+                    if (cartBadge) cartBadge.innerText = data.cartSize; 
+
                     Swal.fire({
                         icon: 'success',
                         title: 'Đã thêm vào giỏ!',
+                        text: 'Sách ' + data.bookName + ' đã sẵn sàng trong giỏ nhé Hải.',
                         showConfirmButton: false,
                         timer: 1500,
                         toast: true,

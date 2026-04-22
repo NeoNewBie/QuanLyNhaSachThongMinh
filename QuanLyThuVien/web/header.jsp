@@ -3,7 +3,7 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <c:set var="currentURI" value="${pageContext.request.requestURI}" />
 
-<%-- 🛑 ĐOẠN JAVA CHẠY NGẦM ĐỂ LẤY THÔNG BÁO TỪ DB (THÊM MỚI) --%>
+<%-- 🛑 ĐOẠN JAVA CHẠY NGẦM ĐỂ LẤY THÔNG BÁO TỪ DB --%>
 <%@ page import="dao.NotificationDAO, model.Notification, java.util.List" %>
 <%
     model.User currentUser = (model.User) session.getAttribute("acc");
@@ -150,9 +150,8 @@
                 </c:choose>
                 <a href="cart" class="action-link position-relative">
                     <i class="bi bi-cart3"></i> GIỎ HÀNG
-                    <span id="cart-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" 
-                          style="font-size: 0.65rem; padding: 0.35em 0.5em; font-weight: 500;">
-                        ${not empty sessionScope.cart ? sessionScope.cart.items.size() : 0}
+                    <span id="cart-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                        ${sessionScope.cart != null ? sessionScope.cart.items.size() : 0}
                     </span>
                 </a>
                 <a href="wishlist" class="action-link"><i class="bi bi-heart"></i> YÊU THÍCH</a>
@@ -223,4 +222,4 @@
 </c:if>
 
 <c:remove var="borrowMsg" scope="session" />
-<c:remove var="cartMsg" scope="session" />
+<c:remove var="cartMsg" scope="session" /> 

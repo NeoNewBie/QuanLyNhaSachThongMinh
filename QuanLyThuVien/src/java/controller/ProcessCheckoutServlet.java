@@ -32,38 +32,37 @@ public class ProcessCheckoutServlet extends HttpServlet {
 
         try {
             String checkoutType = request.getParameter("checkoutType");
-            String phuong_thuc = request.getParameter("txt_phuong_thuc");
+            String phuong_thuc = request.getParameter("txt_phuong_thuc"); // COD hoặc TRANSFER
             OrderDAO oDao = new OrderDAO();
             boolean success = false;
-            double totalAmount = 0;
 
             if ("single".equals(checkoutType)) {
                 String idSach = request.getParameter("txt_id_sach");
+                // 🛑 Lấy số lượng thực tế từ form gửi lên (trường hợp mua ngay)
+                String qtyStr = request.getParameter("quantity_mua"); 
+                int qty = (qtyStr != null) ? Integer.parseInt(qtyStr) : 1;
+
                 Book sach = new BookDAO().getBookById(idSach);
                 Cart fakeCart = new Cart();
-                fakeCart.addItem(new Item(sach, 1, sach.getPrice()));
+                fakeCart.addItem(new Item(sach, qty, sach.getPrice()));
+                
                 success = oDao.addOrder(acc, fakeCart);
-                totalAmount = sach.getPrice();
             } else {
                 Cart cart = (Cart) session.getAttribute("cart");
                 if (cart != null) {
                     success = oDao.addOrder(acc, cart);
-                    totalAmount = cart.getTotalMoney();
                     if (success) {
-                        session.removeAttribute("cart"); // 🛑 XÓA GIỎ SAU KHI MUA TỪ GIỎ
+                        session.removeAttribute("cart"); // 🛑 Thanh toán xong phải dọn sạch giỏ hàng
                     }
                 }
             }
 
             if (success) {
-                if ("TRANSFER".equals(phuong_thuc)) {
-                    request.setAttribute("totalAmount", totalAmount);
-                    request.getRequestDispatcher("payment-qr.jsp").forward(request, response);
-                } else {
-                    // 🛑 ĐÁ SANG TRANG THÀNH CÔNG (ORDER-SUCCESS)
-                    response.sendRedirect("order-success.jsp");
-                }
+                // Vì quét mã QR PayOS đã được xử lý bằng Popup ở checkout.jsp rồi
+                // Nên lưu DB xong là cho bay thẳng ra trang Báo Thành Công!
+                response.sendRedirect("order-success.jsp");
             } else {
+                session.setAttribute("error", "Lưu đơn hàng thất bại!");
                 response.sendRedirect("home");
             }
         } catch (Exception e) {

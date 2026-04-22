@@ -1,22 +1,22 @@
 package model;
 
 public class User {
-    private int id; // Đây chính là UserID trong SQL Server
+    private int id; // UserID
     private String username;
     private String password;
     private String fullName;
     private int roleId;
-    
-    // 3 biến cho Profile
     private String email;
     private String phone;
     private String address;
+    // 🛑 THÊM BIẾN NÀY ĐỂ LƯU ĐƯỜNG DẪN ẢNH
+    private String avatar;
 
-    // 1. Hàm tạo rỗng (Bắt buộc phải có để dùng bean)
+    // 1. Hàm tạo rỗng
     public User() {}
 
-    // 2. Hàm tạo đầy đủ để dùng cho trang Profile & Login
-    public User(int id, String username, String password, String fullName, int roleId, String email, String phone, String address) {
+    // 2. Hàm tạo đầy đủ (Đã cập nhật thêm Avatar ở cuối)
+    public User(int id, String username, String password, String fullName, int roleId, String email, String phone, String address, String avatar) {
         this.id = id;
         this.username = username;
         this.password = password;
@@ -25,9 +25,14 @@ public class User {
         this.email = email;
         this.phone = phone;
         this.address = address;
+        this.avatar = avatar;
     }
 
-    // --- CÁC HÀM GETTER VÀ SETTER (ĐÃ DỌN DẸP) ---
+    // --- CÁC HÀM GETTER VÀ SETTER ---
+    
+    // Mẹo: Tôi thêm cái getUserId() này để sếp xài cho tiện, khớp với Servlet
+    public int getUserId() { return id; } 
+    
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
 
@@ -51,4 +56,8 @@ public class User {
 
     public String getAddress() { return address; }
     public void setAddress(String address) { this.address = address; }
+
+    // 🛑 QUAN TRỌNG: Getter và Setter cho Avatar
+    public String getAvatar() { return avatar; }
+    public void setAvatar(String avatar) { this.avatar = avatar; }
 }

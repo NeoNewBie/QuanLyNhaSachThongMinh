@@ -19,39 +19,49 @@ public class AddToCartServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
-        HttpSession phien_lam_viec = request.getSession();
+        HttpSession session = request.getSession();
         String txt_id_sach = request.getParameter("id");
         String txt_hanh_dong = request.getParameter("action"); 
-        String format = request.getParameter("format"); // Lấy thêm tham số phân biệt bản in/web
+        String format = request.getParameter("format"); 
+        String isAjax = request.getParameter("ajax");
+        
+        // Lấy thêm số lượng (phục vụ cho nút [-][1][+] ở trang chi tiết)
+        int quantity = 1;
+        String qtyStr = request.getParameter("quantity");
+        if (qtyStr != null && !qtyStr.isEmpty()) {
+            try {
+                quantity = Integer.parseInt(qtyStr);
+            } catch (Exception e) { quantity = 1; }
+        }
         
         try {
             BookDAO dao_sach = new BookDAO();
             Book sach = dao_sach.getBookById(txt_id_sach);
             
             if (sach != null) {
-                // 🛑 NẾU LÀ MUA NGAY TỐC HÀNH
+                // 🛑 TRƯỜNG HỢP 1: MUA NGAY TỐC HÀNH (Redirect thẳng sang thanh toán)
                 if ("buy".equals(txt_hanh_dong)) {
                     if (sach.getIsEbook() == 1 && !"physical".equals(format)) {
                         response.sendRedirect("payment-ebook?id=" + txt_id_sach);
                     } else {
-                        response.sendRedirect("checkout?id=" + txt_id_sach);
+                        // Mua sách giấy ngay, truyền luôn số lượng
+                        response.sendRedirect("checkout?id=" + txt_id_sach + "&quantity=" + quantity + "&checkoutType=single");
                     }
                     return; 
                 }
 
-                // 🛑 NẾU CHỈ LÀ THÊM VÀO GIỎ HÀNG
-                Cart gio_hang = (Cart) phien_lam_viec.getAttribute("cart");
+                // 🛑 TRƯỜNG HỢP 2 & 3: THÊM VÀO GIỎ HÀNG (AJAX hoặc Redirect)
+                Cart gio_hang = (Cart) session.getAttribute("cart");
                 if (gio_hang == null) {
                     gio_hang = new Cart();
                 }
-                Item mat_hang = new Item(sach, 1, sach.getPrice());
+                
+                // Thêm mặt hàng vào giỏ với đúng số lượng khách chọn
+                Item mat_hang = new Item(sach, quantity, sach.getPrice());
                 gio_hang.addItem(mat_hang);
-                phien_lam_viec.setAttribute("cart", gio_hang);
+                session.setAttribute("cart", gio_hang);
 
-                // ==========================================
-                // 🛑 BỔ SUNG MỚI: XỬ LÝ NẾU LÀ AJAX GỌI ĐẾN
-                // ==========================================
-                String isAjax = request.getParameter("ajax");
+                // Nếu là AJAX gọi đến (Dùng cho Home và Detail không load lại trang)
                 if ("true".equals(isAjax)) {
                     response.setContentType("application/json");
                     response.setCharacterEncoding("UTF-8");
@@ -61,14 +71,14 @@ public class AddToCartServlet extends HttpServlet {
                         totalItems += item.getQuantity();
                     }
                     
-                    // Trả về JSON cho Javascript
+                    // Trả về JSON: trạng thái, tổng số lượng (để nảy badge), tên sách (để hiện Toast)
                     String json = "{\"status\":\"success\", \"cartSize\": " + totalItems + ", \"bookName\": \"" + sach.getTitle().replace("\"", "\\\"") + "\"}";
                     response.getWriter().write(json);
-                    return; // Kết thúc sớm, không cho load lại trang
+                    return; 
                 }
 
-                // Nếu trình duyệt cũ không dùng AJAX thì vẫn redirect bình thường
-                phien_lam_viec.setAttribute("cartMsg", "Đã thêm vào giỏ hàng thành công!");
+                // Nếu là trình duyệt cũ (không dùng AJAX), thông báo và quay về trang chi tiết
+                session.setAttribute("cartMsg", "Đã thêm vào giỏ hàng thành công!");
                 response.sendRedirect("book-detail?id=" + txt_id_sach);
                 
             } else {
