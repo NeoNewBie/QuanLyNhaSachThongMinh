@@ -47,8 +47,6 @@ public class BorrowDAO {
             ps.setInt(1, userId);
             rs = ps.executeQuery();
             while (rs.next()) {
-                // Sử dụng Constructor 3 (6 tham số)
-                // Lưu ý: Status trong SQL là int, ta ép về String để khớp Model
                 list.add(new Borrow(
                     rs.getInt(1),      // id
                     rs.getString(2),   // title
@@ -106,7 +104,6 @@ public class BorrowDAO {
             ps.setInt(1, userId);
             rs = ps.executeQuery();
             while (rs.next()) {
-                // Sử dụng Constructor 2 (7 tham số)
                 list.add(new Borrow(
                     rs.getInt(1),      // BorrowID
                     rs.getString(2),   // Title
@@ -120,5 +117,95 @@ public class BorrowDAO {
         } catch (Exception e) { e.printStackTrace(); }
         finally { close(); }
         return list;
+    }
+
+    // 🛑 ĐÃ FIX: Hàm lấy toàn bộ danh sách mượn cho Admin (Bắt đúng cột BorrowID)
+    public java.util.List<model.Borrow> getAllBorrows() {
+        java.util.List<model.Borrow> list = new java.util.ArrayList<>();
+        String query = "SELECT br.BorrowID, br.BorrowDate, br.ReturnDate, br.ActualReturnDate, br.Status, "
+                     + "b.Title AS BookTitle "
+                     + "FROM Borrows br "
+                     + "JOIN Books b ON br.BookID = b.BookID "
+                     + "ORDER BY br.BorrowDate DESC"; 
+                     
+        try (java.sql.Connection conn = new utils.DBContext().getConnection();
+             java.sql.PreparedStatement ps = conn.prepareStatement(query);
+             java.sql.ResultSet rs = ps.executeQuery()) {
+             
+            while (rs.next()) {
+                model.Borrow b = new model.Borrow();
+                b.setId(rs.getInt("BorrowID"));
+                b.setBookTitle(rs.getString("BookTitle"));
+                b.setBorrowDate(rs.getDate("BorrowDate"));
+                b.setReturnDate(rs.getDate("ReturnDate"));
+                b.setActualReturnDate(rs.getDate("ActualReturnDate"));
+                b.setStatus(rs.getString("Status"));
+                list.add(b);
+            }
+        } catch (Exception e) { e.printStackTrace(); }
+        return list;
+    }
+
+    // 🛑 ĐÃ FIX: Hàm thay đổi trạng thái (Bắt đúng cột BorrowID)
+    public void updateBorrowStatus(int borrowId, String status) {
+        String query = status.equals("4") 
+            ? "UPDATE Borrows SET Status = ?, ActualReturnDate = GETDATE() WHERE BorrowID = ?" 
+            : "UPDATE Borrows SET Status = ? WHERE BorrowID = ?";
+        try (java.sql.Connection conn = new utils.DBContext().getConnection();
+             java.sql.PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setString(1, status);
+            ps.setInt(2, borrowId);
+            ps.executeUpdate();
+        } catch (Exception e) { e.printStackTrace(); }
+    }
+    // Lấy UserID từ mã Phiếu mượn (Để gửi thông báo cho đúng người)
+    public int getUserIdByBorrowId(int borrowId) {
+        String query = "SELECT UserID FROM Borrows WHERE BorrowID = ?";
+        try (java.sql.Connection conn = new utils.DBContext().getConnection();
+             java.sql.PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setInt(1, borrowId);
+            try (java.sql.ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getInt("UserID");
+            }
+        } catch (Exception e) { e.printStackTrace(); }
+        return -1; // Trả về -1 nếu lỗi
+    }
+    // Lấy thông tin chi tiết của 1 phiếu mượn bằng ID
+    public model.Borrow getBorrowById(int borrowId) {
+        String query = "SELECT br.BorrowID, br.BorrowDate, br.ReturnDate, br.ActualReturnDate, br.Status, "
+                     + "b.Title AS BookTitle, b.CoverImage AS BookImage "
+                     + "FROM Borrows br "
+                     + "JOIN Books b ON br.BookID = b.BookID "
+                     + "WHERE br.BorrowID = ?"; 
+        try (java.sql.Connection conn = new utils.DBContext().getConnection();
+             java.sql.PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setInt(1, borrowId);
+            try (java.sql.ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    model.Borrow b = new model.Borrow();
+                    b.setId(rs.getInt("BorrowID"));
+                    b.setBookTitle(rs.getString("BookTitle"));
+                    b.setBookImage(rs.getString("BookImage"));
+                    b.setBorrowDate(rs.getDate("BorrowDate"));
+                    b.setReturnDate(rs.getDate("ReturnDate"));
+                    b.setActualReturnDate(rs.getDate("ActualReturnDate"));
+                    b.setStatus(rs.getString("Status"));
+                    return b;
+                }
+            }
+        } catch (Exception e) { e.printStackTrace(); }
+        return null;
+    }
+    // Hàm Gia hạn thêm ngày mượn sách
+    public boolean extendBorrow(int borrowId, int extraDays) {
+        // SQL Server: DATEADD(day, số_ngày, cột_cần_cộng)
+        String query = "UPDATE Borrows SET ReturnDate = DATEADD(day, ?, ReturnDate) WHERE BorrowID = ?";
+        try (java.sql.Connection conn = new utils.DBContext().getConnection();
+             java.sql.PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setInt(1, extraDays);
+            ps.setInt(2, borrowId);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) { e.printStackTrace(); }
+        return false;
     }
 }

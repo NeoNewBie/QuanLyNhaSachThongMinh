@@ -380,4 +380,64 @@ public class BookDAO {
             e.printStackTrace(); 
         }
     }
+    // 🛑 HÀM LỌC TỔNG HỢP (VIP PRO) - Loại bỏ Ebook
+   // 🛑 HÀM LỌC TỔNG HỢP (VIP PRO) - CÁCH LY 100% EBOOK
+    public List<model.Book> getFilteredBooks(String categorySlug, String cateId, String searchTxt, String minPrice, String maxPrice, String sort) {
+        List<model.Book> list = new java.util.ArrayList<>();
+        
+        // 1. Base query: LUÔN LUÔN CHỈ LẤY SÁCH VẬT LÝ (isEbook = 0)
+        StringBuilder query = new StringBuilder("SELECT * FROM Books WHERE isEbook = 0 ");
+        
+        // 2. Lọc Danh mục
+        if (cateId != null && !cateId.trim().isEmpty()) {
+            query.append(" AND CategoryID = ").append(cateId).append(" ");
+        } else if (categorySlug != null && !categorySlug.trim().isEmpty() && !categorySlug.equals("all")) {
+            if ("new".equals(categorySlug)) query.append(" AND DATEDIFF(day, PublicationDate, GETDATE()) <= 30 ");
+            // Thêm rule nếu sếp có danh mục hot/featured
+        }
+        
+        // 3. Lọc Tìm kiếm
+        if (searchTxt != null && !searchTxt.trim().isEmpty()) {
+            query.append(" AND Title LIKE N'%").append(searchTxt).append("%' ");
+        }
+        
+        // 4. Lọc Giá
+        if (minPrice != null && !minPrice.trim().isEmpty()) {
+            query.append(" AND Price >= ").append(minPrice).append(" ");
+        }
+        if (maxPrice != null && !maxPrice.trim().isEmpty()) {
+            query.append(" AND Price <= ").append(maxPrice).append(" ");
+        }
+        
+        // 5. Sắp xếp VIP PRO (Chuẩn Shopee)
+        if (sort != null && !sort.isEmpty()) {
+            switch (sort) {
+                case "bestseller": query.append(" ORDER BY BookID ASC "); break; // Đổi thành ORDER BY SoLuongBan DESC nếu DB sếp có
+                case "popular": query.append(" ORDER BY Title ASC "); break;     // Đổi thành ORDER BY LuotXem DESC nếu DB sếp có
+                case "newest": query.append(" ORDER BY BookID DESC "); break;
+                case "priceAsc": query.append(" ORDER BY Price ASC "); break;
+                case "priceDesc": query.append(" ORDER BY Price DESC "); break;
+                default: query.append(" ORDER BY BookID DESC "); break; 
+            }
+        } else {
+            query.append(" ORDER BY BookID DESC "); // Mặc định luôn là mới nhất
+        }
+
+        try (java.sql.Connection conn = new utils.DBContext().getConnection();
+             java.sql.PreparedStatement ps = conn.prepareStatement(query.toString());
+             java.sql.ResultSet rs = ps.executeQuery()) {
+             
+            while (rs.next()) {
+                model.Book b = new model.Book();
+                b.setId(rs.getInt("BookID"));
+                b.setTitle(rs.getString("Title"));
+                b.setAuthor(rs.getString("Author"));
+                b.setPrice(rs.getDouble("Price"));
+                b.setCoverImage(rs.getString("CoverImage"));
+                b.setIsEbook(rs.getInt("isEbook"));
+                list.add(b);
+            }
+        } catch (Exception e) { e.printStackTrace(); }
+        return list;
+    }
 }

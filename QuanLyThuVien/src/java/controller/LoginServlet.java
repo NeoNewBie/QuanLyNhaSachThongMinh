@@ -48,6 +48,9 @@ public class LoginServlet extends HttpServlet {
             HttpSession session = request.getSession();
             session.setAttribute("acc", account);
             
+            // 🛑 NẠP LẠI GIỎ HÀNG TỪ DATABASE LÊN SESSION NGAY KHI ĐĂNG NHẬP
+            session.setAttribute("cart", new dao.CartDAO().getCartByUserId(account.getId()));
+            
             // ==========================================
             // LOGIC COOKIE (REMEMBER ME)
             // ==========================================

@@ -38,7 +38,7 @@ public class OrderDetailServlet extends HttpServlet {
             // Kiểm tra bảo mật: Khách chỉ được xem đơn của chính mình (trừ khi là Admin)
             if (order != null && (order.getUserID() == acc.getId() || acc.getRoleId() == 1)) {
                 request.setAttribute("order", order);
-                request.setAttribute("details", details);
+                request.setAttribute("details", details); // 🛑 Đẩy cái vali "details" này sang JSP nè
                 request.getRequestDispatcher("order-detail.jsp").forward(request, response);
             } else {
                 response.sendRedirect("orders"); // Không phải đơn của mình thì đá về

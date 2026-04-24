@@ -52,7 +52,9 @@ public class ProcessCheckoutServlet extends HttpServlet {
                 if (cart != null) {
                     success = oDao.addOrder(acc, cart);
                     if (success) {
-                        session.removeAttribute("cart"); // 🛑 Thanh toán xong phải dọn sạch giỏ hàng
+                        // 🛑 Xóa sạch giỏ hàng dưới Database và Session
+                        new dao.CartDAO().clearCart(acc.getId());
+                        session.removeAttribute("cart"); 
                     }
                 }
             }

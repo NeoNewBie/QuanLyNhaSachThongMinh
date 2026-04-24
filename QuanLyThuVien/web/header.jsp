@@ -1,9 +1,10 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <c:set var="currentURI" value="${pageContext.request.requestURI}" />
 
-<%-- 🛑 ĐOẠN JAVA CHẠY NGẦM ĐỂ LẤY THÔNG BÁO TỪ DB --%>
+<%-- ĐOẠN JAVA CHẠY NGẦM ĐỂ LẤY THÔNG BÁO TỪ DB --%>
 <%@ page import="dao.NotificationDAO, model.Notification, java.util.List" %>
 <%
     model.User currentUser = (model.User) session.getAttribute("acc");
@@ -37,10 +38,9 @@
     /* DROPDOWN MENU */
     .dropdown-menu { border: none; border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.1); padding: 8px; margin-top: 15px !important; min-width: 190px; }
     .dropdown-header { font-size: 0.65rem !important; text-transform: uppercase; font-weight: 800; color: #b0b8c1; letter-spacing: 1.5px; padding: 5px 12px !important; margin-top: 5px; }
-    .dropdown-item { border-radius: 8px; padding: 8px 12px; font-weight: 500; font-size: 0.85rem; color: #444; transition: all 0.2s ease; display: flex; align-items: center; }
-    .dropdown-item i { font-size: 1.05rem; margin-right: 10px; color: #888; transition: 0.2s; }
-    .dropdown-item:hover, .dropdown-item:focus { background-color: #FFF5F3 !important; color: var(--accent-color) !important; transform: translateX(4px); padding-left: 12px !important; }
-    .dropdown-item:hover i { color: var(--accent-color) !important; }
+    .dropdown-item { border-radius: 8px; padding: 8px 12px; font-size: 0.85rem; transition: all 0.2s ease; display: flex; align-items: flex-start; }
+    .dropdown-item i { font-size: 1.05rem; margin-right: 10px; transition: 0.2s; }
+    .dropdown-item:hover, .dropdown-item:focus { background-color: #FFF5F3 !important; transform: translateX(4px); }
     .dropdown-divider { margin: 6px 0; border-color: #f0f0f0; }
 
     /* MENU CHÍNH XANH NAVY */
@@ -85,14 +85,15 @@
                         
                         <div class="dropdown me-1">
                             <a class="action-link position-relative" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="bi bi-bell-fill fs-5 text-warning"></i> 
+                                <i class="bi bi-bell-fill fs-5 ${unreadCount > 0 ? 'text-warning' : 'text-secondary'}"></i> 
+                                
                                 <c:if test="${unreadCount > 0}">
                                     <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.55rem; padding: 0.3em 0.4em;">
                                         ${unreadCount}
                                     </span>
                                 </c:if>
                             </a>
-                            <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0" style="width: 320px; margin-top: 18px !important; max-height: 400px; overflow-y: auto;">
+                            <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0" style="width: 340px; margin-top: 18px !important; max-height: 400px; overflow-y: auto;">
                                 <li><h6 class="dropdown-header text-primary fw-bold">Thông báo của sếp</h6></li>
                                 <li><hr class="dropdown-divider"></li>
                                 
@@ -103,20 +104,40 @@
                                     <c:otherwise>
                                         <c:forEach items="${notifList}" var="n">
                                             <li>
-                                                <%-- Nếu chưa đọc thì tô màu nền xám nhẹ cho dễ nhìn --%>
-                                                <a class="dropdown-item py-2 ${n.read ? '' : 'bg-light'}" style="white-space: normal;" href="orders">
-                                                    <div class="d-flex align-items-start gap-2">
-                                                        <i class="bi bi-info-circle-fill text-primary fs-4 mt-1"></i>
-                                                        <div>
-                                                            <p class="mb-1 fw-bold text-dark" style="font-size: 0.85rem;">${n.message}</p>
-                                                            <small class="text-muted d-block" style="font-size: 0.75rem;">
-                                                                <fmt:formatDate value="${n.createdDate}" pattern="HH:mm dd/MM/yyyy"/>
+                                                <c:set var="targetLink" value="home" />
+                                                
+                                                <c:choose>
+                                                    <c:when test="${fn:contains(n.message, '#ORD-')}">
+                                                        <c:set var="idStr" value="${fn:substringBefore(fn:substringAfter(n.message, '#ORD-'), ' ')}" />
+                                                        <c:set var="targetLink" value="order-detail?id=${idStr}" />
+                                                    </c:when>
+                                                    <c:when test="${fn:contains(n.message, '#LIB-')}">
+                                                        <c:set var="idStr" value="${fn:substringBefore(fn:substringAfter(n.message, '#LIB-'), ' ')}" />
+                                                        <c:set var="targetLink" value="borrow-detail?id=${idStr}" />
+                                                    </c:when>
+                                                </c:choose>
+
+                                                <%-- 🛑 ĐÃ FIX: Chèn link read-notif để cập nhật DB trước khi bay sang trang chi tiết --%>
+                                                <a class="dropdown-item py-2 ${!n.read ? 'bg-light border-start border-4 border-warning' : 'bg-white text-muted'}" style="white-space: normal;" href="read-notif?nid=${n.notifId}&url=${targetLink}">
+                                                    <div class="d-flex align-items-start gap-2 w-100">
+                                                        <i class="bi bi-info-circle-fill fs-5 mt-1 ${!n.read ? 'text-warning' : 'text-secondary opacity-50'}"></i>
+                                                        <div class="flex-grow-1">
+                                                            <p class="mb-1 text-dark ${!n.read ? 'fw-bold' : 'fw-normal'}" style="font-size: 0.85rem; line-height: 1.4;">${n.message}</p>
+                                                            <small class="d-block ${!n.read ? 'text-primary fw-semibold' : 'text-muted opacity-75'}" style="font-size: 0.7rem;">
+                                                                <fmt:formatDate value="${n.createdDate}" pattern="HH:mm - dd/MM/yyyy"/>
                                                             </small>
                                                         </div>
+                                                        <c:if test="${!n.read}">
+                                                            <span class="p-1 bg-primary border border-light rounded-circle mt-2"></span>
+                                                        </c:if>
                                                     </div>
                                                 </a>
                                             </li>
                                         </c:forEach>
+                                        
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item text-center text-primary fw-bold py-2 d-block w-100" href="notifications">Xem tất cả thông báo</a></li>
+
                                     </c:otherwise>
                                 </c:choose>
                             </ul>
@@ -132,18 +153,18 @@
                                 </c:if>
                                 
                                 <li><span class="dropdown-header">Cá nhân</span></li>
-                                <li><a class="dropdown-item" href="profile"><i class="bi bi-person-vcard"></i> Hồ sơ của tôi</a></li>
-                                <li><a class="dropdown-item" href="change-password.jsp"><i class="bi bi-shield-lock"></i> Đổi mật khẩu</a></li>
+                                <li><a class="dropdown-item" href="profile"><i class="bi bi-person-vcard me-2"></i> Hồ sơ của tôi</a></li>
+                                <li><a class="dropdown-item" href="change-password.jsp"><i class="bi bi-shield-lock me-2"></i> Đổi mật khẩu</a></li>
                                 
                                 <li><hr class="dropdown-divider"></li>
                                 
                                 <li><span class="dropdown-header">Giao dịch</span></li>
-                                <li><a class="dropdown-item" href="borrow-history"><i class="bi bi-journal-bookmark"></i> Sách đang mượn</a></li>
-                                <li><a class="dropdown-item" href="orders"><i class="bi bi-box-seam"></i> Lịch sử mua hàng</a></li>
+                                <li><a class="dropdown-item" href="borrow-history"><i class="bi bi-journal-bookmark me-2"></i> Sách đang mượn</a></li>
+                                <li><a class="dropdown-item" href="orders"><i class="bi bi-box-seam me-2"></i> Lịch sử mua hàng</a></li>
                                 
                                 <li><hr class="dropdown-divider"></li>
                                 
-                                <li><a class="dropdown-item fw-bold" href="logout" style="color: #ED553B !important;"><i class="bi bi-box-arrow-right text-danger"></i> Đăng xuất</a></li>
+                                <li><a class="dropdown-item fw-bold" href="logout" style="color: #ED553B !important;"><i class="bi bi-box-arrow-right text-danger me-2"></i> Đăng xuất</a></li>
                             </ul>
                         </div>
                     </c:otherwise>
@@ -222,4 +243,4 @@
 </c:if>
 
 <c:remove var="borrowMsg" scope="session" />
-<c:remove var="cartMsg" scope="session" /> 
+<c:remove var="cartMsg" scope="session" />

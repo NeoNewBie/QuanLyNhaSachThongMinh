@@ -13,6 +13,8 @@ import javax.servlet.http.HttpServletResponse;
 
 @WebServlet("/image-proxy")
 public class ImageProxyServlet extends HttpServlet {
+    
+    @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String imageUrl = request.getParameter("url");
         if (imageUrl == null || imageUrl.isEmpty()) return;
@@ -33,7 +35,13 @@ public class ImageProxyServlet extends HttpServlet {
                 }
             }
         } catch (Exception e) {
-            response.sendError(404);
+            // 🛑 ĐÃ FIX: Chỉ gửi lỗi 404 nếu Response CHƯA bị "chốt đơn"
+            if (!response.isCommitted()) {
+                response.sendError(404);
+            } else {
+                // Đã gửi dở dang rồi thì in nhẹ ra console cho biết thôi, không văng exception đỏ lòm nữa
+                System.out.println("[ImageProxy] Lỗi tải ảnh giữa chừng, bỏ qua: " + imageUrl);
+            }
         }
     }
 }

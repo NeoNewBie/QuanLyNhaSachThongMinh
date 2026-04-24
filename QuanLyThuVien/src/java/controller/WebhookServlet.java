@@ -25,23 +25,32 @@ public class WebhookServlet extends HttpServlet {
         
         System.out.println("PayOS gửi tin: " + json);
 
-        // 2. Kiểm tra nếu có mã MUACHAP trong phần mô tả (description)
-        if (json.contains("MUACHAP")) {
-            // Regex lấy ID User (U) và ID Chapter (C)
-            Pattern p = Pattern.compile("MUACHAP U(\\d+) C(\\d+)");
-            Matcher m = p.matcher(json.toUpperCase());
+        // 🛑 ĐÃ FIX: Hút mã BILL bất chấp ngân hàng xóa dấu _ hay chèn rác
+        // Nhận diện "BILL447764", "BILL 447764", "BILL_447764"
+        Matcher billMatcher = Pattern.compile("BILL[\\s_]*(\\d+)").matcher(json.toUpperCase());
+        if (billMatcher.find()) {
+            // Ném cái số (ví dụ: 447764) vào kho tạm
+            String billCode = billMatcher.group(1); 
+            controller.CheckPaymentStatusServlet.paidTransactions.add(billCode);
+            System.out.println("==> Đã đẩy mã Đơn Hàng vào kho tạm: BILL_" + billCode);
+        }
 
-            if (m.find()) {
-                int uId = Integer.parseInt(m.group(1));
-                int cId = Integer.parseInt(m.group(2));
-                
-                // 3. Gọi DAO mở khóa trong Database
-                new ChapterDAO().unlockChapter(uId, cId);
-                System.out.println("==> ĐÃ MỞ KHÓA CHƯƠNG " + cId + " CHO SẾP HẢI!");
-            }
+        // 🛑 ĐÃ FIX: Hút mã MUACHAP bất chấp rác
+        // Nhận diện "MUACHAP U1 C2", "MUACHAPU1C2", v.v.
+        Matcher muaMatcher = Pattern.compile("MUACHAP[\\s_]*U[\\s_]*(\\d+)[\\s_]*C[\\s_]*(\\d+)").matcher(json.toUpperCase());
+        if (muaMatcher.find()) {
+            int uId = Integer.parseInt(muaMatcher.group(1));
+            int cId = Integer.parseInt(muaMatcher.group(2));
+            
+            // Ném định dạng "U1_C2" vào kho tạm
+            controller.CheckPaymentStatusServlet.paidTransactions.add("U" + uId + "_C" + cId);
+            
+            // Gọi DAO mở khóa trong Database
+            new ChapterDAO().unlockChapter(uId, cId);
+            System.out.println("==> ĐÃ MỞ KHÓA CHƯƠNG " + cId + " CHO SẾP HẢI!");
         }
         
-        // 4. Báo cho PayOS là đã nhận tin thành công (Bắt buộc phải có)
+        // 4. Báo cho PayOS là đã nhận tin thành công
         response.setStatus(200);
         response.getWriter().write("{\"success\":true}");
     }

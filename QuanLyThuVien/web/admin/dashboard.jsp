@@ -37,6 +37,12 @@
                 <a href="${pageContext.request.contextPath}/admin/manage-orders" class="text-decoration-none p-2">
                     <i class="bi bi-cart-check me-2"></i> Quản lý Đơn hàng
                 </a>
+                
+                <%-- 🛑 ĐÃ THÊM MENU QUẢN LÝ MƯỢN SÁCH VÀO ĐÂY --%>
+                <a href="${pageContext.request.contextPath}/admin/manage-borrows" class="text-decoration-none p-2">
+                    <i class="bi bi-journal-check me-2"></i> Quản lý Mượn Sách
+                </a>
+
                 <a href="${pageContext.request.contextPath}/admin/manage-users" class="text-decoration-none p-2">
                     <i class="bi bi-people me-2"></i> Quản lý Người dùng
                 </a>
@@ -109,7 +115,7 @@
                             </a>
                         </div>
                         <div class="col-md-3">
-                            <a href="${pageContext.request.contextPath}/manage-orders" class="btn btn-outline-success w-100 py-3 rounded-3">
+                            <a href="${pageContext.request.contextPath}/admin/manage-orders" class="btn btn-outline-success w-100 py-3 rounded-3">
                                 <i class="bi bi-check2-all fs-3 d-block mb-2"></i> Duyệt đơn hàng
                             </a>
                         </div>

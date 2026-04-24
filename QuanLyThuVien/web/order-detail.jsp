@@ -9,96 +9,119 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <style>
-        body { background-color: #F8F9FA; color: #333; }
-        .detail-card { background: #fff; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); padding: 40px; margin: 40px auto; max-width: 1000px; }
-        .header-title { color: #173F5F; font-weight: bold; font-size: 1.8rem; }
-        
-        .info-box { background: #f8f9fa; border: 1px solid #eee; border-radius: 8px; padding: 20px; margin-bottom: 30px; }
-        .info-label { font-weight: bold; color: #6c757d; margin-bottom: 5px; font-size: 0.9rem; text-transform: uppercase; }
-        .info-value { font-weight: bold; color: #212529; font-size: 1.1rem; }
-
-        .table { vertical-align: middle; }
-        .table thead th { border-bottom: 2px solid #dee2e6; color: #495057; font-weight: bold; padding: 15px 10px; }
-        .table tbody td { border-bottom: 1px solid #f1f3f5; padding: 15px 10px; font-weight: 500; }
-        
-        .book-img { width: 60px; height: 80px; object-fit: contain; border-radius: 4px; border: 1px solid #eee; background: #fff; padding: 2px;}
-        .total-row td { font-size: 1.2rem; font-weight: bold; color: #173F5F; border-bottom: none; padding-top: 20px;}
-        .total-price { color: #ED553B; font-size: 1.5rem; }
-
-        .badge { padding: 8px 15px; border-radius: 50px; font-weight: 500; font-size: 0.9rem;}
-        .btn-back { display: inline-block; margin-top: 20px; color: #6c757d; text-decoration: none; font-weight: 500; transition: 0.2s;}
-        .btn-back:hover { color: #173F5F; text-decoration: underline; }
+        :root { --primary-color: #173F5F; --accent-color: #ED553B; --bg-light: #F8F9FA; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-light); }
+        .order-header { background: linear-gradient(135deg, var(--primary-color), #2A618A); color: white; border-radius: 15px 15px 0 0; padding: 25px; }
+        .info-card { border-radius: 15px; border: none; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
+        .book-img { width: 60px; height: 85px; object-fit: cover; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .badge-status { font-size: 0.9rem; padding: 8px 15px; border-radius: 50px; font-weight: 600; letter-spacing: 0.5px; }
+        .table thead th { text-transform: uppercase; font-size: 0.8rem; color: #666; letter-spacing: 0.5px; border-bottom: 2px solid #eee; }
     </style>
 </head>
 <body>
     <jsp:include page="header.jsp" />
 
-    <div class="container">
-        <div class="detail-card">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2 class="header-title">Chi Tiết Đơn Hàng #ORD-${order.id}</h2>
-                <c:choose>
-                    <c:when test="${order.status == 'Đang xử lý'}"><span class="badge bg-warning text-dark fs-6">Đang xử lý</span></c:when>
-                    <c:when test="${order.status == 'Đang giao'}"><span class="badge bg-info text-dark fs-6">Đang giao</span></c:when>
-                    <c:when test="${order.status == 'Đã giao'}"><span class="badge bg-success fs-6">Đã giao</span></c:when>
-                    <c:when test="${order.status == 'Đã hủy'}"><span class="badge bg-danger fs-6">Đã hủy</span></c:when>
-                    <c:otherwise><span class="badge bg-secondary fs-6">${order.status}</span></c:otherwise>
-                </c:choose>
-            </div>
+    <div class="container py-5" style="max-width: 950px;">
+        <div class="mb-4 d-flex justify-content-between align-items-center">
+            <a href="orders" class="text-decoration-none text-muted fw-bold transition-300 hover-primary">
+                <i class="bi bi-arrow-left me-2"></i>Quay lại danh sách
+            </a>
+            <h3 class="fw-bold mb-0" style="color: var(--primary-color);">Chi Tiết Đơn Hàng</h3>
+        </div>
 
-            <div class="row info-box">
-                <div class="col-md-4 border-end">
-                    <div class="info-label">Ngày đặt hàng</div>
-                    <div class="info-value"><fmt:formatDate value="${order.orderDate}" pattern="dd/MM/yyyy HH:mm"/></div>
+        <div class="card info-card mb-4">
+            <div class="order-header d-flex justify-content-between align-items-center">
+                <div>
+                    <h4 class="mb-1 fw-bold">Mã đơn hàng: <span class="text-warning">#ORD-${order.id}</span></h4>
+                    <p class="mb-0 opacity-75"><i class="bi bi-calendar-check me-2"></i>Ngày đặt: <fmt:formatDate value="${order.orderDate}" pattern="HH:mm - dd/MM/yyyy"/></p>
                 </div>
-                <div class="col-md-4 border-end ps-md-4">
-                    <div class="info-label">Khách hàng</div>
-                    <div class="info-value">${sessionScope.acc.fullName}</div>
-                </div>
-                <div class="col-md-4 ps-md-4">
-                    <div class="info-label">Thông tin liên hệ</div>
-                    <div class="info-value fs-6 fw-normal">${sessionScope.acc.phone} <br> ${sessionScope.acc.address}</div>
+                <div>
+                    <%-- Trạng thái màu mè nổi bật --%>
+                    <c:choose>
+                        <c:when test="${order.status == '0'}"><span class="badge bg-warning text-dark badge-status shadow-sm"><i class="bi bi-hourglass-split me-1"></i>Đang chờ duyệt</span></c:when>
+                        <c:when test="${order.status == '1'}"><span class="badge bg-info text-dark badge-status shadow-sm"><i class="bi bi-wallet2 me-1"></i>Đã thanh toán (QR)</span></c:when>
+                        <c:when test="${order.status == '2'}"><span class="badge bg-primary badge-status shadow-sm"><i class="bi bi-box-seam me-1"></i>Đang chuẩn bị sách</span></c:when>
+                        <c:when test="${order.status == '3' || order.status == 'Đã giao'}"><span class="badge bg-success badge-status shadow-sm"><i class="bi bi-check-circle me-1"></i>Hoàn thành</span></c:when>
+                        <c:otherwise><span class="badge bg-secondary badge-status shadow-sm">${order.status}</span></c:otherwise>
+                    </c:choose>
                 </div>
             </div>
+            
+            <div class="card-body p-4">
+                <div class="row mb-5 g-4">
+                    <div class="col-md-6">
+                        <h6 class="text-muted fw-bold text-uppercase mb-3"><i class="bi bi-person-badge me-2" style="color: var(--accent-color);"></i>Thông tin nhận hàng</h6>
+                        <div class="p-3 bg-light rounded-3 h-100 border border-light">
+                            <p class="mb-2 fw-bold text-dark fs-5">${acc.fullName != null ? acc.fullName : acc.username}</p>
+                            <p class="mb-2 text-secondary"><i class="bi bi-telephone-fill text-muted me-2"></i>${acc.phone != null ? acc.phone : 'Chưa cập nhật số ĐT'}</p>
+                            <p class="mb-0 text-secondary"><i class="bi bi-geo-alt-fill text-muted me-2"></i>${acc.address != null ? acc.address : 'Nhận sách trực tiếp tại Thư viện UTE'}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-muted fw-bold text-uppercase mb-3"><i class="bi bi-credit-card-2-front me-2" style="color: var(--accent-color);"></i>Hình thức thanh toán</h6>
+                        <div class="p-3 bg-light rounded-3 h-100 border border-light d-flex flex-column justify-content-center">
+                            <p class="mb-2 text-secondary fs-6">Phương thức: <strong class="text-dark">Thanh toán ${order.status == '1' ? 'Chuyển khoản (QR Code)' : 'Tiền mặt (COD)'}</strong></p>
+                            <p class="mb-0 text-secondary fs-6">Trạng thái: 
+                                <strong class="${order.status == '1' || order.status == '3' || order.status == 'Đã giao' ? 'text-success' : 'text-warning'}">
+                                    ${order.status == '1' || order.status == '3' || order.status == 'Đã giao' ? 'Đã thanh toán thành công' : 'Chưa thanh toán'}
+                                </strong>
+                            </p>
+                        </div>
+                    </div>
+                </div>
 
-            <h4 class="fw-bold mb-3" style="color: #495057;">Danh sách sản phẩm</h4>
-            <div class="table-responsive">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th colspan="2">Sản phẩm</th>
-                            <th class="text-center">Đơn giá</th>
-                            <th class="text-center">Số lượng</th>
-                            <th class="text-end">Thành tiền</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <c:forEach items="${details}" var="i">
+                <h6 class="text-muted fw-bold text-uppercase mb-3"><i class="bi bi-bag-check-fill me-2" style="color: var(--accent-color);"></i>Sản phẩm đã đặt</h6>
+                <div class="table-responsive mb-4">
+                    <table class="table align-middle table-borderless">
+                        <thead class="table-light">
                             <tr>
-                                <td style="width: 80px;">
-                                    <img src="${i.book.coverImage.startsWith('http') ? i.book.coverImage : pageContext.request.contextPath.concat('/').concat(i.book.coverImage)}" class="book-img">
-                                </td>
-                                <td>
-                                    <span class="fw-bold d-block text-dark">${i.book.title}</span>
-                                    <small class="text-muted">${i.book.author}</small>
-                                </td>
-                                <td class="text-center"><fmt:formatNumber value="${i.price}" pattern="###,###"/> đ</td>
-                                <td class="text-center">x${i.quantity}</td>
-                                <td class="text-end fw-bold" style="color: #212529;">
-                                    <fmt:formatNumber value="${i.price * i.quantity}" pattern="###,###"/> đ
-                                </td>
+                                <th class="ps-3">Tựa sách</th>
+                                <th class="text-center">Đơn giá</th>
+                                <th class="text-center">Số lượng</th>
+                                <th class="text-end pe-3">Thành tiền</th>
                             </tr>
-                        </c:forEach>
-                        <tr class="total-row">
-                            <td colspan="3"></td>
-                            <td class="text-end">TỔNG CỘNG:</td>
-                            <td class="text-end total-price"><fmt:formatNumber value="${order.totalPrice}" pattern="###,###"/> VNĐ</td>
-                        </tr>
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            <%-- 🛑 ĐÃ FIX: Đổi từ orderDetailList sang details cho khớp với Servlet --%>
+                            <c:forEach items="${details}" var="item">
+                                <tr class="border-bottom">
+                                    <td class="ps-3 py-3">
+                                        <div class="d-flex align-items-center gap-3">
+                                            <img src="${item.book.coverImage}" class="book-img" onerror="this.src='https://placehold.co/60x85?text=No+Img'">
+                                            <div>
+                                                <h6 class="fw-bold mb-1" style="color: var(--primary-color);">${item.book.title}</h6>
+                                                <small class="text-muted"><i class="bi bi-pen me-1"></i>${item.book.author}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="text-center"><fmt:formatNumber value="${item.price}" pattern="###,###"/> đ</td>
+                                    <td class="text-center fw-bold">
+                                        <span class="bg-light px-3 py-1 rounded-pill border">x${item.quantity}</span>
+                                    </td>
+                                    <td class="text-end pe-3 fw-bold text-danger fs-6"><fmt:formatNumber value="${item.price * item.quantity}" pattern="###,###"/> đ</td>
+                                </tr>
+                            </c:forEach>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="d-flex justify-content-end p-4 bg-light rounded-4 border">
+                    <div style="width: 300px;">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted fw-semibold">Tạm tính sản phẩm:</span>
+                            <span class="fw-bold"><fmt:formatNumber value="${order.totalPrice}" pattern="###,###"/> đ</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted fw-semibold">Phí giao dịch/Giao hàng:</span>
+                            <span class="fw-bold">0 đ</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top border-2 border-secondary-subtle">
+                            <span class="fw-bold text-uppercase text-muted">Tổng cộng:</span>
+                            <span class="fs-3 fw-bold" style="color: var(--accent-color);"><fmt:formatNumber value="${order.totalPrice}" pattern="###,###"/> đ</span>
+                        </div>
+                    </div>
+                </div>
             </div>
-
-            <a href="orders" class="btn-back"><i class="bi bi-arrow-left me-1"></i> Quay lại danh sách đơn hàng</a>
         </div>
     </div>
 

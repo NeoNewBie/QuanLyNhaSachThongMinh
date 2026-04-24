@@ -4,6 +4,7 @@ import dao.BookDAO;
 import model.Book;
 import model.Cart;
 import model.Item;
+import model.User;
 import java.io.IOException;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -51,15 +52,25 @@ public class AddToCartServlet extends HttpServlet {
                 }
 
                 // 🛑 TRƯỜNG HỢP 2 & 3: THÊM VÀO GIỎ HÀNG (AJAX hoặc Redirect)
-                Cart gio_hang = (Cart) session.getAttribute("cart");
-                if (gio_hang == null) {
-                    gio_hang = new Cart();
-                }
+                User acc = (User) session.getAttribute("acc");
+                Cart gio_hang;
                 
-                // Thêm mặt hàng vào giỏ với đúng số lượng khách chọn
-                Item mat_hang = new Item(sach, quantity, sach.getPrice());
-                gio_hang.addItem(mat_hang);
-                session.setAttribute("cart", gio_hang);
+                if (acc != null) {
+                    // Đã đăng nhập: Lưu thẳng xuống Database và nạp lại lên Session
+                    dao.CartDAO cDao = new dao.CartDAO();
+                    cDao.addToCart(acc.getId(), sach.getId(), quantity);
+                    gio_hang = cDao.getCartByUserId(acc.getId());
+                    session.setAttribute("cart", gio_hang);
+                } else {
+                    // Khách vãng lai: Lưu tạm trên Session
+                    gio_hang = (Cart) session.getAttribute("cart");
+                    if (gio_hang == null) {
+                        gio_hang = new Cart();
+                    }
+                    Item mat_hang = new Item(sach, quantity, sach.getPrice());
+                    gio_hang.addItem(mat_hang);
+                    session.setAttribute("cart", gio_hang);
+                }
 
                 // Nếu là AJAX gọi đến (Dùng cho Home và Detail không load lại trang)
                 if ("true".equals(isAjax)) {

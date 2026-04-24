@@ -18,9 +18,20 @@ public class UpdateCartServlet extends HttpServlet {
             int id = Integer.parseInt(request.getParameter("id"));
             int quantity = Integer.parseInt(request.getParameter("quantity"));
             HttpSession session = request.getSession();
-            Cart cart = (Cart) session.getAttribute("cart");
-            if (cart != null) {
-                cart.updateQuantity(id, quantity);
+            
+            model.User acc = (model.User) session.getAttribute("acc");
+            
+            if (acc != null) {
+                // Đã đăng nhập: Update Database, nạp lại lên Session
+                dao.CartDAO cDao = new dao.CartDAO();
+                cDao.updateQuantity(acc.getId(), id, quantity);
+                session.setAttribute("cart", cDao.getCartByUserId(acc.getId()));
+            } else {
+                // Khách vãng lai: Update trực tiếp Session
+                Cart cart = (Cart) session.getAttribute("cart");
+                if (cart != null) {
+                    cart.updateQuantity(id, quantity);
+                }
             }
             response.sendRedirect("cart");
         } catch (Exception e) {

@@ -24,94 +24,64 @@ public class ShopServlet extends HttpServlet {
         BookDAO dao = new BookDAO();
         CategoryDAO cdao = new CategoryDAO();
         
-        // 1. Lấy tất cả tham số từ request
+        // 1. Lấy tất cả tham số
         String cate = request.getParameter("category"); 
         String txt = request.getParameter("txt");       
         String minPrice = request.getParameter("min");  
         String maxPrice = request.getParameter("max");  
-        String[] cateIds = request.getParameterValues("cateId"); 
+        String cateId = request.getParameter("cateId"); 
         String sort = request.getParameter("sort");     
         String pStr = request.getParameter("page");     
         
         int pageSize = 9; 
         int pageIndex = 1;
-        try {
-            if (pStr != null) pageIndex = Integer.parseInt(pStr);
-        } catch (Exception e) { pageIndex = 1; }
+        try { if (pStr != null) pageIndex = Integer.parseInt(pStr); } catch (Exception e) {}
         
         List<Book> list = null;
         String title = "Tất Cả Sách";
-        int totalBooks = 0;
-        boolean isDefault = false;
 
-        // 2. LOGIC LỌC NÂNG CAO & TÌM KIẾM
-        // Kiểm tra xem khách có đang dùng thanh tìm kiếm, lọc giá, lọc thể loại hay sắp xếp không
-        boolean isSearching = (txt != null && !txt.isEmpty()) 
-                            || (minPrice != null && !minPrice.isEmpty()) 
-                            || (maxPrice != null && !maxPrice.isEmpty()) 
-                            || (cateIds != null && cateIds.length > 0) 
-                            || sort != null;
-
-        if (isSearching) {
-            // 🛑 FIX LỖI: Thêm tham số 'null' vào cuối vì hàm searchAdvanced của anh em mình giờ cần 6 tham số
-            // Tham số thứ 6 (isFeatured) để null nghĩa là tìm kiếm chung, không ép buộc chỉ lấy sách nổi bật
-            list = dao.searchAdvanced(txt, cateIds, minPrice, maxPrice, sort, null);
-            title = "Kết quả tìm kiếm & lọc";
-        } 
-        // 3. LOGIC THEO MENU
-        else if ("new".equals(cate)) {
-            list = dao.getNewBooks();
-            title = "Sách Mới Cập Nhật";
-        } else if ("featured".equals(cate)) {
-            // Sếp cũng có thể dùng luôn hàm searchAdvanced ở đây cho đồng bộ:
-            // list = dao.searchAdvanced(null, null, null, null, null, true);
-            list = dao.getFeaturedBooks();
-            title = "Sách Nổi Bật";
-        } else if ("hot".equals(cate)) {
-            list = dao.getBestSellerBooks();
-            title = "Sách Bán Chạy Nhất";
-        } else if ("most-viewed".equals(cate)) {
-            list = dao.getMostViewedBooks();
-            title = "Sách Được Xem Nhiều";
-        } else if ("ebook".equals(cate)) {
-            list = dao.getEbooks();
+        // 2. ĐỊNH TUYẾN DỮ LIỆU
+        if ("ebook".equals(cate)) {
+            list = dao.getEbooks(); // Kênh riêng cho truyện
             title = "Truyện Online Đặc Sắc";
         } else {
-            // Mặc định: Phân trang trực tiếp từ SQL (Rất nhanh)
-            list = dao.getBooksByPage(pageIndex, pageSize);
-            totalBooks = dao.countTotalBooks();
-            title = "Tất Cả Sách";
-            isDefault = true;
+            // 🛑 GOM HẾT VÀO HÀM MASTER: Đảm bảo lọc siêu mượt và không dính Ebook
+            list = dao.getFilteredBooks(cate, cateId, txt, minPrice, maxPrice, sort);
+            
+            // Xử lý tiêu đề đẹp
+            if (txt != null && !txt.isEmpty()) title = "Kết quả tìm kiếm";
+            else if (cateId != null && !cateId.isEmpty()) {
+                // Tùy chọn: Tìm tên Category để in ra làm Title
+                Category currentC = cdao.getCategoryById(Integer.parseInt(cateId));
+                title = currentC != null ? "Sách " + currentC.getName() : "Danh Mục Sách";
+            }
+            else if ("new".equals(cate)) title = "Sách Mới Cập Nhật";
+            else title = "Tất Cả Sách";
         }
 
-        // 4. XỬ LÝ PHÂN TRANG CHO KẾT QUẢ TÌM KIẾM (SubList)
-        if (!isDefault && list != null) {
-            totalBooks = list.size();
+        // 3. XỬ LÝ PHÂN TRANG (SubList)
+        int totalBooks = (list != null) ? list.size() : 0;
+        if (list != null && !list.isEmpty()) {
             int start = (pageIndex - 1) * pageSize;
             int end = Math.min(start + pageSize, totalBooks);
-            
-            if (start < totalBooks) {
-                list = list.subList(start, end);
-            } else {
-                list.clear();
-            }
+            if (start < totalBooks) list = list.subList(start, end);
+            else list.clear();
         }
 
-        // 5. Gửi dữ liệu ra JSP
-        int totalPages = (int) Math.ceil((double)totalBooks / pageSize);
-        
+        // 4. Gửi dữ liệu ra JSP
         request.setAttribute("listB", list);      
         request.setAttribute("listCC", cdao.getAll());   
         request.setAttribute("pageTitle", title);
         request.setAttribute("currentPage", pageIndex);
-        request.setAttribute("totalPages", totalPages);
+        request.setAttribute("totalPages", (int) Math.ceil((double)totalBooks / pageSize));
         request.setAttribute("activeCate", cate);
         
-        // Giữ lại các giá trị khách đã nhập để hiện lên thanh tìm kiếm/lọc
+        // 🛑 GIỮ TRẠNG THÁI ĐỂ NHÉT VÀO FORM ẨN
         request.setAttribute("txtS", txt);
         request.setAttribute("minS", minPrice);
         request.setAttribute("maxS", maxPrice);
-        request.setAttribute("sortS", sort);
+        request.setAttribute("cateIdS", cateId);
+        request.setAttribute("sortS", sort != null ? sort : "popular");
 
         request.getRequestDispatcher("shop.jsp").forward(request, response);
     }

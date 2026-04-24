@@ -8,12 +8,11 @@
     <title>Quản lý Đơn hàng - Admin</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
     <style>
-        :root {
-            --primary-color: #173F5F;
-            --accent-color: #ED553B;
-            --bg-light: #F6F6F6;
-        }
+        :root { --primary-color: #173F5F; --accent-color: #ED553B; --bg-light: #F6F6F6; }
         body { font-family: 'Inter', sans-serif; background-color: var(--bg-light); }
         .sidebar { background-color: var(--primary-color); min-height: 100vh; position: fixed; width: 250px; }
         .main-content { margin-left: 250px; padding: 3rem; width: calc(100% - 250px); }
@@ -35,6 +34,12 @@
                 <a href="${pageContext.request.contextPath}/admin/manage-orders" class="text-decoration-none p-2 active">
                     <i class="bi bi-cart-check me-2"></i> Quản lý Đơn hàng
                 </a>
+
+                <%-- 🛑 ĐÃ THÊM MENU QUẢN LÝ MƯỢN SÁCH VÀO ĐÂY --%>
+                <a href="${pageContext.request.contextPath}/admin/manage-borrows" class="text-decoration-none p-2">
+                    <i class="bi bi-journal-check me-2"></i> Quản lý Mượn Sách
+                </a>
+
                 <a href="${pageContext.request.contextPath}/admin/manage-users" class="text-decoration-none p-2">
                     <i class="bi bi-people me-2"></i> Quản lý Người dùng
                 </a>
@@ -67,21 +72,35 @@
                                     <td class="fw-bold">#ORD-${o.id}</td>
                                     <td>USER-${o.userID}</td>
                                     <td>${o.orderDate}</td>
-                                    <td class="text-danger fw-bold"><fmt:formatNumber value="${o.totalAmount}" type="number" pattern="###,###"/> đ</td>
+                                    
+                                    <td class="text-danger fw-bold"><fmt:formatNumber value="${o.totalPrice}" type="number" pattern="###,###"/> đ</td>
+                                    
                                     <td>
                                         <c:choose>
-                                            <c:when test="${o.status == 'Đã giao'}">
-                                                <span class="badge bg-success px-3 py-2 rounded-pill">${o.status}</span>
+                                            <c:when test="${o.status == '0'}">
+                                                <span class="badge bg-warning text-dark px-3 py-2 rounded-pill"><i class="bi bi-hourglass-split me-1"></i> Chờ duyệt</span>
+                                            </c:when>
+                                            <c:when test="${o.status == '1'}">
+                                                <span class="badge bg-info text-dark px-3 py-2 rounded-pill"><i class="bi bi-wallet2 me-1"></i> Đã thanh toán</span>
+                                            </c:when>
+                                            <c:when test="${o.status == '2'}">
+                                                <span class="badge bg-primary px-3 py-2 rounded-pill"><i class="bi bi-box-seam me-1"></i> Đã duyệt / Sẵn sàng</span>
+                                            </c:when>
+                                            <c:when test="${o.status == '3' || o.status == 'Đã giao'}">
+                                                <span class="badge bg-success px-3 py-2 rounded-pill"><i class="bi bi-check-circle me-1"></i> Hoàn thành</span>
+                                            </c:when>
+                                            <c:when test="${o.status == '5'}">
+                                                <span class="badge bg-danger px-3 py-2 rounded-pill"><i class="bi bi-x-circle me-1"></i> Đã hủy</span>
                                             </c:when>
                                             <c:otherwise>
-                                                <span class="badge bg-warning text-dark px-3 py-2 rounded-pill">Đang xử lý</span>
+                                                <span class="badge bg-secondary px-3 py-2 rounded-pill">${o.status}</span>
                                             </c:otherwise>
                                         </c:choose>
                                     </td>
                                     <td>
-                                        <c:if test="${o.status != 'Đã giao'}">
-                                            <a href="${pageContext.request.contextPath}/manage-orders?action=approve&id=${o.id}" class="btn btn-sm btn-outline-success">
-                                                <i class="bi bi-check-circle"></i> Duyệt đơn
+                                        <c:if test="${o.status == '0' || o.status == '1'}">
+                                            <a href="${pageContext.request.contextPath}/admin/manage-orders?action=approve&id=${o.id}" class="btn btn-sm btn-outline-success rounded-pill fw-bold">
+                                                <i class="bi bi-check-circle"></i> Duyệt ngay
                                             </a>
                                         </c:if>
                                     </td>
@@ -93,5 +112,19 @@
             </div>
         </div>
     </div>
+
+    <c:if test="${not empty sessionScope.sysMsg}">
+        <script>
+            Swal.fire({
+                icon: '${sessionScope.sysMsgType}',
+                title: '${sessionScope.sysMsgType == "success" ? "THÀNH CÔNG!" : "CÓ LỖI XẢY RA!"}',
+                text: '${sessionScope.sysMsg}',
+                confirmButtonColor: '#173F5F'
+            });
+        </script>
+        <c:remove var="sysMsg" scope="session" />
+        <c:remove var="sysMsgType" scope="session" />
+    </c:if>
+    
 </body>
 </html>

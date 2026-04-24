@@ -56,7 +56,14 @@
                                 <td class="text-center"><fmt:formatDate value="${b.returnDate}" pattern="dd/MM/yyyy"/></td>
                                 <td class="text-center">
                                     <c:choose>
-                                        <%-- 1. Check nếu sếp ĐÃ TRẢ SÁCH (cột actualReturnDate khác null) --%>
+                                        <c:when test="${b.status == '0' || b.status == 'Pending'}">
+                                            <span class="badge bg-warning text-dark badge-smart"><i class="bi bi-hourglass me-1"></i>Đang chờ thủ thư duyệt</span>
+                                        </c:when>
+
+                                        <c:when test="${b.status == '2'}">
+                                            <span class="badge bg-info text-dark badge-smart"><i class="bi bi-geo-alt-fill me-1"></i>Sách đã sẵn sàng tại quầy</span>
+                                        </c:when>
+
                                         <c:when test="${not empty b.actualReturnDate}">
                                             <span class="badge bg-success badge-smart">
                                                 <i class="bi bi-check-circle-fill me-1"></i>
@@ -64,7 +71,6 @@
                                             </span>
                                         </c:when>
 
-                                        <%-- 2. Nếu CHƯA TRẢ (cột actualReturnDate là null), bắt đầu tính đếm ngược --%>
                                         <c:otherwise>
                                             <%
                                                 model.Borrow item = (model.Borrow) pageContext.getAttribute("b");
@@ -77,6 +83,10 @@
                                                     out.print("<span class='badge bg-danger badge-smart'><i class='bi bi-alarm-fill me-1'></i>Quá hạn " + Math.abs(daysLeft) + " ngày 💀</span>");
                                                 } else if (daysLeft <= 3) {
                                                     out.print("<span class='badge bg-warning text-dark badge-smart'><i class='bi bi-exclamation-triangle-fill me-1'></i>Còn " + daysLeft + " ngày ⚠️</span>");
+                                                    
+                                                    // 🛑 ĐÃ FIX: Chuyển href thành onclick gọi Popup
+                                                    out.print("<div class='mt-2'><a href='javascript:void(0)' onclick='confirmExtend(" + item.getId() + ")' class='btn btn-sm btn-outline-primary rounded-pill fw-bold' style='font-size: 0.75rem;'><i class='bi bi-calendar-plus'></i> Xin gia hạn</a></div>");
+                                                    
                                                 } else {
                                                     out.print("<span class='badge bg-primary badge-smart'><i class='bi bi-clock-history me-1'></i>Còn " + daysLeft + " ngày</span>");
                                                 }
@@ -103,5 +113,24 @@
     </div>
 
     <jsp:include page="footer.jsp" />
+
+    <script>
+        function confirmExtend(borrowId) {
+            Swal.fire({
+                title: 'Xác nhận gia hạn?',
+                text: "Hệ thống sẽ cộng thêm 7 ngày vào hạn trả. Chi phí gia hạn sẽ được trừ vào tiền cọc khi sếp mang trả sách!",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#173F5F',
+                cancelButtonColor: '#ED553B',
+                confirmButtonText: '<i class="bi bi-check-circle"></i> Đồng ý gia hạn',
+                cancelButtonText: 'Hủy bỏ'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = 'extend-borrow?id=' + borrowId;
+                }
+            })
+        }
+    </script>
 </body>
 </html>

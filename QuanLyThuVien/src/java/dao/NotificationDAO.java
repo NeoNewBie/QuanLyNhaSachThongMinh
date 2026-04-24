@@ -28,7 +28,6 @@ public class NotificationDAO {
     // Lấy 5 thông báo mới nhất của 1 User
     public List<Notification> getTop5ByUser(int userId) {
         List<Notification> list = new ArrayList<>();
-        // Lấy 5 dòng mới nhất
         String query = "SELECT TOP 5 * FROM Notifications WHERE UserID = ? ORDER BY CreatedDate DESC";
         try {
             conn = new DBContext().getConnection();
@@ -56,5 +55,37 @@ public class NotificationDAO {
             if(rs.next()) return rs.getInt(1);
         } catch(Exception e) {}
         return 0;
+    }
+
+    // Lấy TẤT CẢ thông báo
+    public java.util.List<model.Notification> getAllByUser(int userId) {
+        java.util.List<model.Notification> list = new java.util.ArrayList<>();
+        String query = "SELECT * FROM Notifications WHERE UserID = ? ORDER BY CreatedDate DESC";
+        try (java.sql.Connection conn = new utils.DBContext().getConnection();
+             java.sql.PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setInt(1, userId);
+            try (java.sql.ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(new model.Notification(
+                        rs.getInt("NotifID"), 
+                        rs.getInt("UserID"), 
+                        rs.getString("Message"), 
+                        rs.getBoolean("IsRead"), 
+                        rs.getTimestamp("CreatedDate")
+                    ));
+                }
+            }
+        } catch (Exception e) { e.printStackTrace(); }
+        return list;
+    }
+
+    // 🛑 HÀM MỚI: Đánh dấu là đã đọc
+    public void markAsRead(int notifId) {
+        String query = "UPDATE Notifications SET IsRead = 1 WHERE NotifID = ?";
+        try (java.sql.Connection conn = new utils.DBContext().getConnection();
+             java.sql.PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setInt(1, notifId);
+            ps.executeUpdate();
+        } catch (Exception e) { e.printStackTrace(); }
     }
 }

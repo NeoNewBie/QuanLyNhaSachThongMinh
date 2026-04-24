@@ -177,7 +177,18 @@
 
         function triggerQRModal() {
             const amount = "${totalAmount}";
-            const orderId = "BILL_" + Date.now().toString().slice(-6);
+            
+            // 🛑 ĐÃ FIX: Sinh mã giao dịch chuẩn để gửi đi
+            let orderId = "";
+            <c:choose>
+                <c:when test="${sach_mua.isEbook == 1}">
+                    orderId = "MUACHAP U${sessionScope.acc.id} C${sach_mua.id}";
+                </c:when>
+                <c:otherwise>
+                    orderId = "BILL_" + Math.floor(Math.random() * 1000000);
+                </c:otherwise>
+            </c:choose>
+
             const myModal = new bootstrap.Modal(document.getElementById('payOSModal'));
             
             document.getElementById('qr-order-id').innerText = orderId;

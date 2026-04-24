@@ -22,15 +22,23 @@ public class RemoveCartServlet extends HttpServlet {
         try {
             int id = Integer.parseInt(idRaw);
             
-            // 2. Lấy Giỏ hàng hiện tại từ Session
+            // 2. Lấy Session và kiểm tra User
             HttpSession session = request.getSession();
-            Cart cart = (Cart) session.getAttribute("cart");
+            model.User acc = (model.User) session.getAttribute("acc");
             
-            // 3. Nếu có giỏ hàng, tiến hành xóa sách
-            if (cart != null) {
-                cart.removeItem(id);
-                // Cập nhật lại giỏ hàng vào Session
-                session.setAttribute("cart", cart);
+            if (acc != null) {
+                // 3a. Nếu đã đăng nhập: Xóa trong Database và cập nhật lại Session
+                dao.CartDAO cDao = new dao.CartDAO();
+                cDao.removeCartItem(acc.getId(), id);
+                session.setAttribute("cart", cDao.getCartByUserId(acc.getId()));
+            } else {
+                // 3b. Nếu khách vãng lai: Xóa trực tiếp trong Session
+                Cart cart = (Cart) session.getAttribute("cart");
+                if (cart != null) {
+                    cart.removeItem(id);
+                    // Cập nhật lại giỏ hàng vào Session
+                    session.setAttribute("cart", cart);
+                }
             }
         } catch (Exception e) {
             System.out.println("Lỗi xóa giỏ hàng: " + e.getMessage());

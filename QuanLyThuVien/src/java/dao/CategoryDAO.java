@@ -13,6 +13,7 @@ public class CategoryDAO {
     PreparedStatement ps = null;
     ResultSet rs = null;
 
+    // 1. Hàm lấy tất cả danh mục
     public List<Category> getAll() {
         List<Category> list = new ArrayList<>();
         String query = "SELECT * FROM Categories"; // Hải check xem DB có bảng này chưa nhé
@@ -30,4 +31,21 @@ public class CategoryDAO {
         return list;
     }
     
+    // 🛑 ĐÃ THÊM: Hàm lấy chính xác 1 danh mục theo ID
+    public Category getCategoryById(int id) {
+        String query = "SELECT * FROM Categories WHERE CategoryID = ?";
+        try {
+            conn = new DBContext().getConnection();
+            ps = conn.prepareStatement(query);
+            ps.setInt(1, id);
+            rs = ps.executeQuery();
+            if (rs.next()) {
+                return new Category(
+                    rs.getInt("CategoryID"),
+                    rs.getString("CategoryName")
+                );
+            }
+        } catch (Exception e) { e.printStackTrace(); }
+        return null;
+    }
 }
