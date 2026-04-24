@@ -11,15 +11,15 @@ public class ComicScraper {
     public static List<String> getImages(String chapterUrl) {
         List<String> images = new ArrayList<>();
         try {
-            // Giả danh trình duyệt để trang gốc không chặn
+            // 🛑 ĐÃ FIX: Nâng cấp giáp giả danh trình duyệt
             Document doc = Jsoup.connect(chapterUrl)
-                    .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
+                    .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36")
                     .referrer("https://www.google.com/")
                     .timeout(10000)
                     .get();
             
-            // Lọc lấy tất cả ảnh trong khung đọc truyện (thử nhiều class phổ biến)
-            Elements imgElements = doc.select(".page-chapter img, .reading-detail img, .reading-content img");
+            // 🛑 ĐÃ FIX: Mở rộng lưới quét, tóm hết các thể loại class mà bọn truyện tranh hay dùng
+            Elements imgElements = doc.select(".page-chapter img, .reading-detail img, .reading-content img, #ctl00_divCenter img, .box_doc img");
             
             for (Element img : imgElements) {
                 // Ưu tiên lấy data-original (link thật) trước, nếu không có mới lấy src
@@ -29,12 +29,15 @@ public class ComicScraper {
                 
                 if (src != null && !src.isEmpty()) {
                     if (src.startsWith("//")) src = "https:" + src;
-                    images.add(src);
+                    // Lọc bớt mấy cái ảnh rác, logo của web
+                    if (!src.contains("logo") && !src.contains("banner") && !src.contains("avatar")) {
+                        images.add(src);
+                    }
                 }
             }
             System.out.println("🚀 [DEBUG] Đã cào được " + images.size() + " ảnh từ: " + chapterUrl);
         } catch (Exception e) {
-            System.err.println("❌ Lỗi cào truyện: " + e.getMessage());
+            System.err.println("❌ Lỗi cào truyện: Bọn nó chặn hoặc sai Link rồi sếp ơi! - " + e.getMessage());
         }
         return images;
     }

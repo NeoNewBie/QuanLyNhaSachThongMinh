@@ -22,9 +22,18 @@ public class ImageProxyServlet extends HttpServlet {
         try {
             URL url = new URL(imageUrl);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            // Đóng vai trình duyệt từ trang gốc
-            conn.setRequestProperty("Referer", "https://www.nettruyennew.com/");
-            conn.setRequestProperty("User-Agent", "Mozilla/5.0");
+            
+            // 🛑 ĐÃ FIX NÂNG CẤP: Giả danh trình duyệt Chrome xịn nhất hiện tại
+            conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36");
+            
+            // 🛑 ĐÃ FIX: Lấy tự động tên miền gốc của tấm ảnh làm giấy thông hành (Referer)
+            // Thay vì fix cứng "nettruyennew.com" (vì web nó đổi tên miền liên tục)
+            String host = url.getHost();
+            conn.setRequestProperty("Referer", "https://" + host + "/");
+            
+            // Timeout chống treo web nếu ảnh bị lỗi
+            conn.setConnectTimeout(5000);
+            conn.setReadTimeout(5000);
 
             response.setContentType(conn.getContentType());
             try (InputStream in = conn.getInputStream(); OutputStream out = response.getOutputStream()) {
@@ -35,12 +44,10 @@ public class ImageProxyServlet extends HttpServlet {
                 }
             }
         } catch (Exception e) {
-            // 🛑 ĐÃ FIX: Chỉ gửi lỗi 404 nếu Response CHƯA bị "chốt đơn"
             if (!response.isCommitted()) {
                 response.sendError(404);
             } else {
-                // Đã gửi dở dang rồi thì in nhẹ ra console cho biết thôi, không văng exception đỏ lòm nữa
-                System.out.println("[ImageProxy] Lỗi tải ảnh giữa chừng, bỏ qua: " + imageUrl);
+                System.out.println("[ImageProxy] Lỗi tải mảnh ảnh, bỏ qua: " + imageUrl);
             }
         }
     }

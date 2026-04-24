@@ -9,6 +9,10 @@
     <title>${pageTitle} - Smart Lib</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    
+    <%-- 🛑 Chỉ để duy nhất 1 thẻ gọi Bootstrap ở đây --%>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
     <style>
         body { background: #F8F9FA; color: #333; }
         
@@ -21,7 +25,7 @@
         
         .cate-item.active-cate { color: #ED553B; background: #FFF5F3; font-weight: 700; border-left: 4px solid #ED553B; }
 
-        /* 🛑 SORT BAR SHOPEE STYLE */
+        /* SORT BAR SHOPEE STYLE */
         .sort-bar { background: #fff; padding: 12px 20px; border-radius: 12px; border: 1px solid #eee; display: flex; align-items: center; margin-bottom: 25px; }
         .sort-label { font-size: 0.9rem; font-weight: 700; color: #777; margin-right: 15px; }
         .btn-sort { background: #f1f3f4; color: #444; font-weight: 600; font-size: 0.9rem; border: none; padding: 8px 20px; border-radius: 8px; margin-right: 10px; transition: 0.2s; }
@@ -56,12 +60,11 @@
         .custom-pagination li.page-nav:hover .page-link { background: #FFF5F3; border-color: #ED553B; }
         .custom-pagination li.disabled .page-link { border-color: #eee; color: #ccc; pointer-events: none; }
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
     <jsp:include page="header.jsp" />
 
-    <%-- 🛑 BẢO BỐI: FORM ẨN LƯU TRỮ TRÍ NHỚ BỘ LỌC --%>
+    <%-- FORM ẨN LƯU TRỮ TRÍ NHỚ BỘ LỌC --%>
     <form id="masterFilterForm" action="shop" method="GET" class="d-none">
         <input type="hidden" name="category" value="${activeCate}">
         <input type="hidden" name="cateId" id="formCateId" value="${cateIdS}">
@@ -119,7 +122,7 @@
                     ${pageTitle} <span class="text-danger small ms-2">(${listB.size()} kết quả)</span>
                 </h4>
 
-                <%-- 🛑 SORT BAR CHUẨN SHOPEE --%>
+                <%-- SORT BAR CHUẨN SHOPEE --%>
                 <c:if test="${activeCate != 'ebook'}">
                     <div class="sort-bar shadow-sm">
                         <span class="sort-label">Sắp xếp theo</span>
@@ -188,7 +191,6 @@
     </div>
 
     <jsp:include page="footer.jsp" />
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <%-- SCRIPT BỘ LỌC MASTER --%>
     <script>

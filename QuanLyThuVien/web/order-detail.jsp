@@ -17,8 +17,9 @@
         .badge-status { font-size: 0.9rem; padding: 8px 15px; border-radius: 50px; font-weight: 600; letter-spacing: 0.5px; }
         .table thead th { text-transform: uppercase; font-size: 0.8rem; color: #666; letter-spacing: 0.5px; border-bottom: 2px solid #eee; }
     </style>
-    <%-- 🛑 ĐÃ FIX: Chuyển thư viện Bootstrap JS lên đây để fix lỗi Dropdown --%>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <%-- 🛑 Chỉ để duy nhất 1 thẻ gọi Bootstrap ở đây --%>
+    
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>

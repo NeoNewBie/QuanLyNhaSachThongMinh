@@ -19,8 +19,8 @@
         .book-img { width: 80px; height: 110px; object-fit: cover; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .badge-status { font-size: 0.9rem; padding: 8px 15px; border-radius: 50px; font-weight: 600; letter-spacing: 0.5px; }
     </style>
-    <%-- 🛑 ĐÃ FIX: Chuyển thư viện Bootstrap JS lên đây để fix lỗi Dropdown --%>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <%-- 🛑 Chỉ để duy nhất 1 thẻ gọi Bootstrap ở đây --%>
+
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
@@ -61,7 +61,6 @@
                             <h4 class="fw-bold mb-2" style="color: var(--primary-color);">${borrowDetail.bookTitle}</h4>
                             <p class="mb-2 text-muted"><i class="bi bi-calendar-event me-2"></i>Ngày hết hạn: <strong class="text-dark"><fmt:formatDate value="${borrowDetail.returnDate}" pattern="dd/MM/yyyy"/></strong></p>
                             
-                            <%-- 🛑 ĐÃ FIX: Logic tính ngày y hệt trang lịch sử, KHÔNG gây trắng trang --%>
                             <c:if test="${borrowDetail.status != '0' && borrowDetail.status != 'Pending' && borrowDetail.status != '5' && borrowDetail.status != 'Đã hủy'}">
                                 <%
                                     model.Borrow b = (model.Borrow) request.getAttribute("borrowDetail");
@@ -88,7 +87,6 @@
                         </div>
                     </div>
 
-                    <%-- 🛑 ĐÃ FIX: Phần 2 cột lấp chỗ trống cho Borrow --%>
                     <div class="d-flex flex-wrap justify-content-between p-4 bg-light rounded-4 border">
                         <div class="pe-md-4 mb-4 mb-md-0" style="flex: 1; min-width: 280px;">
                             <h6 class="fw-bold text-muted mb-2"><i class="bi bi-shield-check me-2"></i>Quy định thư viện</h6>
@@ -98,15 +96,12 @@
                         </div>
 
                         <div class="ps-md-4 d-flex flex-column justify-content-center align-items-end" style="width: 280px; border-left: 2px dashed #dee2e6;">
-                            
-                            <%-- Chỉ hiện nút Gia Hạn khi đang mượn và chưa quá hạn --%>
                             <c:if test="${empty borrowDetail.actualReturnDate && (borrowDetail.status == '3' || borrowDetail.status == 'Đang mượn') && daysLeftObj >= 0}">
                                 <button onclick="confirmExtend(${borrowDetail.id})" class="btn btn-outline-primary rounded-pill fw-bold px-4 py-2 mb-2 w-100 shadow-sm">
                                     <i class="bi bi-calendar-plus me-2"></i>XIN GIA HẠN THÊM
                                 </button>
                             </c:if>
                             
-                            <%-- Hiện nút Hủy khi chờ duyệt --%>
                             <c:if test="${borrowDetail.status == '0' || borrowDetail.status == 'Pending'}">
                                 <button onclick="confirmCancelBorrow(${borrowDetail.id})" class="btn btn-outline-danger rounded-pill fw-bold px-4 py-2 w-100 shadow-sm">
                                     <i class="bi bi-trash3-fill me-2"></i>HỦY PHIẾU MƯỢN
@@ -147,7 +142,6 @@
                 cancelButtonColor: '#6c757d',
                 confirmButtonText: 'Hủy phiếu mượn'
             }).then((result) => {
-                // Sếp tạo CancelBorrowServlet để nhận lệnh này nhé
                 if (result.isConfirmed) window.location.href = 'cancel-borrow?id=' + borrowId;
             })
         }
