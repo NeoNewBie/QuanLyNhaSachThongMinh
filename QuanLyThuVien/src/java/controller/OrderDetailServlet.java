@@ -35,16 +35,21 @@ public class OrderDetailServlet extends HttpServlet {
             Order order = dao.getOrderById(orderId);
             List<Item> details = dao.getOrderDetails(orderId);
             
-            // Kiểm tra bảo mật: Khách chỉ được xem đơn của chính mình (trừ khi là Admin)
+            // Kiểm tra bảo mật
             if (order != null && (order.getUserID() == acc.getId() || acc.getRoleId() == 1)) {
                 request.setAttribute("order", order);
-                request.setAttribute("details", details); // 🛑 Đẩy cái vali "details" này sang JSP nè
+                request.setAttribute("details", details); 
                 request.getRequestDispatcher("order-detail.jsp").forward(request, response);
             } else {
-                response.sendRedirect("orders"); // Không phải đơn của mình thì đá về
+                // 🛑 BẢO HIỂM: Chỉ chuyển hướng nếu web chưa vẽ gì
+                if (!response.isCommitted()) response.sendRedirect("orders"); 
             }
         } catch (Exception e) {
-            response.sendRedirect("orders");
+            e.printStackTrace(); // In lỗi thật ra console để dễ bắt bệnh
+            // 🛑 BẢO HIỂM: Cứu tinh của lỗi IllegalStateException
+            if (!response.isCommitted()) {
+                response.sendRedirect("orders");
+            }
         }
     }
 }

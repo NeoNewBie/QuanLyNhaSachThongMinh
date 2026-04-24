@@ -269,4 +269,17 @@ public boolean checkIsPaid(String orderId) {
     } catch (Exception e) {}
     return false;
 }
+// 🛑 CHIÊU NINJA: Hàm cập nhật trạng thái đơn MỚI NHẤT thành Đã Thanh Toán (1)
+    // 🛑 ĐÃ FIX CHUẨN TÊN CỘT: Hàm cập nhật trạng thái đơn MỚI NHẤT thành Đã Thanh Toán (1)
+    public void updateLatestOrderToPaid(int userId) {
+        // Đổi chữ ID thành OrderID cho khớp 100% với Database của sếp Hải
+        String query = "UPDATE Orders SET Status = '1' WHERE OrderID = (SELECT TOP 1 OrderID FROM Orders WHERE UserID = ? ORDER BY OrderDate DESC)";
+        try (java.sql.Connection conn = new utils.DBContext().getConnection();
+             java.sql.PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setInt(1, userId);
+            ps.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

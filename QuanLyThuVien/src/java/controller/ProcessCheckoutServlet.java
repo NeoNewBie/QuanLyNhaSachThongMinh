@@ -32,13 +32,13 @@ public class ProcessCheckoutServlet extends HttpServlet {
 
         try {
             String checkoutType = request.getParameter("checkoutType");
-            String phuong_thuc = request.getParameter("txt_phuong_thuc"); // COD hoặc TRANSFER
+            String phuongThuc = request.getParameter("txt_phuong_thuc"); // Bắt lấy "COD" hoặc "TRANSFER"
             OrderDAO oDao = new OrderDAO();
             boolean success = false;
 
+            // 1. LƯU ĐƠN VÀO DATABASE (Mặc định Status = 0)
             if ("single".equals(checkoutType)) {
                 String idSach = request.getParameter("txt_id_sach");
-                // 🛑 Lấy số lượng thực tế từ form gửi lên (trường hợp mua ngay)
                 String qtyStr = request.getParameter("quantity_mua"); 
                 int qty = (qtyStr != null) ? Integer.parseInt(qtyStr) : 1;
 
@@ -52,16 +52,19 @@ public class ProcessCheckoutServlet extends HttpServlet {
                 if (cart != null) {
                     success = oDao.addOrder(acc, cart);
                     if (success) {
-                        // 🛑 Xóa sạch giỏ hàng dưới Database và Session
                         new dao.CartDAO().clearCart(acc.getId());
                         session.removeAttribute("cart"); 
                     }
                 }
             }
 
+            // 2. CHUYỂN HƯỚNG VÀ XỬ LÝ TRẠNG THÁI THANH TOÁN
             if (success) {
-                // Vì quét mã QR PayOS đã được xử lý bằng Popup ở checkout.jsp rồi
-                // Nên lưu DB xong là cho bay thẳng ra trang Báo Thành Công!
+                // 🛑 NẾU LÀ CHUYỂN KHOẢN (QR): GỌI HÀM NINJA ĐỔI THÀNH ĐÃ THANH TOÁN
+                if ("TRANSFER".equals(phuongThuc)) {
+                    oDao.updateLatestOrderToPaid(acc.getId());
+                }
+                
                 response.sendRedirect("order-success.jsp");
             } else {
                 session.setAttribute("error", "Lưu đơn hàng thất bại!");

@@ -16,6 +16,10 @@
         .book-img { width: 50px; height: 75px; object-fit: cover; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         .badge-smart { border-radius: 50px; padding: 6px 12px; font-weight: 600; font-size: 0.8rem; }
         .table thead th { border-top: none; color: #666; font-weight: 600; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px; }
+        
+        /* 🛑 Thêm hiệu ứng Hover làm sáng nguyên hàng khi trỏ chuột */
+        .clickable-row { transition: background-color 0.2s ease; cursor: pointer; }
+        .clickable-row:hover { background-color: #f1f5f9 !important; }
     </style>
 </head>
 <body>
@@ -31,7 +35,7 @@
             </div>
             
             <div class="table-responsive">
-                <table class="table table-hover align-middle">
+                <table class="table align-middle">
                     <thead class="table-light">
                         <tr>
                             <th>Hình ảnh</th>
@@ -43,8 +47,9 @@
                     </thead>
                     <tbody>
                         <c:forEach items="${listB}" var="b">
-                            <tr>
-                                <td>
+                            <%-- 🛑 ĐÃ FIX: Biến nguyên cái TR thành nút bấm siêu to khổng lồ --%>
+                            <tr class="clickable-row border-bottom" onclick="window.location.href='borrow-detail?id=${b.id}'" title="Nhấn để xem chi tiết">
+                                <td class="py-3">
                                     <img src="${empty b.bookImage ? 'https://placehold.co/50x75?text=No+Img' : b.bookImage}" 
                                          class="book-img" alt="book">
                                 </td>
@@ -57,11 +62,11 @@
                                 <td class="text-center">
                                     <c:choose>
                                         <c:when test="${b.status == '0' || b.status == 'Pending'}">
-                                            <span class="badge bg-warning text-dark badge-smart"><i class="bi bi-hourglass me-1"></i>Đang chờ thủ thư duyệt</span>
+                                            <span class="badge bg-warning text-dark badge-smart"><i class="bi bi-hourglass me-1"></i>Chờ duyệt</span>
                                         </c:when>
 
                                         <c:when test="${b.status == '2'}">
-                                            <span class="badge bg-info text-dark badge-smart"><i class="bi bi-geo-alt-fill me-1"></i>Sách đã sẵn sàng tại quầy</span>
+                                            <span class="badge bg-info text-dark badge-smart"><i class="bi bi-geo-alt-fill me-1"></i>Sẵn sàng tại quầy</span>
                                         </c:when>
 
                                         <c:when test="${not empty b.actualReturnDate}">
@@ -72,6 +77,7 @@
                                         </c:when>
 
                                         <c:otherwise>
+                                            <%-- 🛑 ĐÃ DỌN DẸP SẠCH SẼ: Di dời nút "Xin Gia Hạn" vào trong trang Detail để tránh xung đột Click --%>
                                             <%
                                                 model.Borrow item = (model.Borrow) pageContext.getAttribute("b");
                                                 long now = new Date().getTime();
@@ -83,10 +89,6 @@
                                                     out.print("<span class='badge bg-danger badge-smart'><i class='bi bi-alarm-fill me-1'></i>Quá hạn " + Math.abs(daysLeft) + " ngày 💀</span>");
                                                 } else if (daysLeft <= 3) {
                                                     out.print("<span class='badge bg-warning text-dark badge-smart'><i class='bi bi-exclamation-triangle-fill me-1'></i>Còn " + daysLeft + " ngày ⚠️</span>");
-                                                    
-                                                    // 🛑 ĐÃ FIX: Chuyển href thành onclick gọi Popup
-                                                    out.print("<div class='mt-2'><a href='javascript:void(0)' onclick='confirmExtend(" + item.getId() + ")' class='btn btn-sm btn-outline-primary rounded-pill fw-bold' style='font-size: 0.75rem;'><i class='bi bi-calendar-plus'></i> Xin gia hạn</a></div>");
-                                                    
                                                 } else {
                                                     out.print("<span class='badge bg-primary badge-smart'><i class='bi bi-clock-history me-1'></i>Còn " + daysLeft + " ngày</span>");
                                                 }
@@ -102,7 +104,7 @@
                                 <td colspan="5" class="text-center py-5 text-muted">
                                     <img src="https://cdn-icons-png.flaticon.com/512/10534/10534066.png" width="80" class="mb-3 opacity-50"><br>
                                     <p class="fs-5">Ông chưa mượn cuốn nào cả Hải ơi.</p>
-                                    <a href="home" class="btn btn-sm btn-outline-primary rounded-pill px-4">Qua Store lựa vài cuốn đi!</a>
+                                    <a href="shop" class="btn btn-sm btn-outline-primary rounded-pill px-4">Qua Store lựa vài cuốn đi!</a>
                                 </td>
                             </tr>
                         </c:if>
@@ -113,24 +115,5 @@
     </div>
 
     <jsp:include page="footer.jsp" />
-
-    <script>
-        function confirmExtend(borrowId) {
-            Swal.fire({
-                title: 'Xác nhận gia hạn?',
-                text: "Hệ thống sẽ cộng thêm 7 ngày vào hạn trả. Chi phí gia hạn sẽ được trừ vào tiền cọc khi sếp mang trả sách!",
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: '#173F5F',
-                cancelButtonColor: '#ED553B',
-                confirmButtonText: '<i class="bi bi-check-circle"></i> Đồng ý gia hạn',
-                cancelButtonText: 'Hủy bỏ'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    window.location.href = 'extend-borrow?id=' + borrowId;
-                }
-            })
-        }
-    </script>
 </body>
 </html>
