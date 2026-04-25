@@ -293,4 +293,16 @@ public boolean checkIsPaid(String orderId) {
             ps.executeUpdate();
         } catch (Exception e) { e.printStackTrace(); }
     }
+    // 🛑 CHỐT ĐƠN: Đổi trạng thái thành 4 (Giao thành công)
+    public boolean completeOrder(String orderId) {
+        String query = "UPDATE Orders SET Status = 4 WHERE OrderID = ?";
+        try (java.sql.Connection conn = new utils.DBContext().getConnection();
+             java.sql.PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setString(1, orderId);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
 }

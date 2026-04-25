@@ -51,15 +51,78 @@
     .nav-link { color: rgba(255,255,255,0.85); font-size: 0.85rem; font-weight: 700; padding: 0 25px; line-height: 50px !important; display: block; transition: 0.3s; text-transform: uppercase; }
     .nav-link:hover, .nav-link.active { color: var(--accent-color) !important; background: rgba(255,255,255,0.1); }
 
-    /* CHATBOT */
-    #ai-chat-box { display: none; position: fixed; bottom: 100px; right: 30px; width: 350px; height: 500px; background: white; border-radius: 20px; box-shadow: 0 15px 50px rgba(0,0,0,0.2); z-index: 9999; flex-direction: column; overflow: hidden; border: 1px solid #eee; }
-    .chat-header { background: var(--primary-color); color: white; padding: 15px; font-weight: 800; display: flex; justify-content: space-between; align-items: center; }
-    .chat-input-group { padding: 15px; background: #fff; border-top: 1px solid #eee; display: flex; gap: 10px; }
-    .chat-input-group input { flex: 1; border-radius: 10px; border: 1px solid #ddd; padding: 8px 15px; outline: none; font-size: 0.85rem; }
-    .chat-input-group button { background: var(--primary-color); color: white; border: none; border-radius: 10px; padding: 0 15px; transition: 0.3s; }
-    .chat-input-group button:hover { background: var(--accent-color); }
-    .chatbot-btn { position: fixed; bottom: 30px; right: 30px; width: 65px; height: 65px; border-radius: 50%; background: var(--accent-color); color: white; display: flex; align-items: center; justify-content: center; font-size: 28px; cursor: pointer; box-shadow: 0 10px 25px rgba(237, 85, 59, 0.4); z-index: 9998; transition: 0.3s; }
-    .chatbot-btn:hover { transform: scale(1.1); }
+    /* 🛑 GIAO DIỆN CHATBOT AI VIP PRO 🛑 */
+    #ai-chat-box { 
+        display: none; position: fixed; bottom: 105px; right: 30px; 
+        width: 360px; height: 520px; background: #f8f9fa; 
+        border-radius: 20px; box-shadow: 0 15px 40px rgba(0,0,0,0.15); 
+        z-index: 9999; flex-direction: column; overflow: hidden; border: 1px solid #e0e0e0;
+        animation: chatSlideUp 0.3s ease-out;
+    }
+    @keyframes chatSlideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    
+    .chat-header { 
+        background: linear-gradient(135deg, var(--primary-color) 0%, #2A618A 100%); 
+        color: white; padding: 18px 20px; font-weight: 800; 
+        display: flex; justify-content: space-between; align-items: center; 
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1); z-index: 2;
+    }
+    
+    /* Khu vực chứa tin nhắn */
+    #chat-content { 
+        flex: 1; overflow-y: auto; padding: 20px; background: #fdfdfd; 
+        display: flex; flex-direction: column; gap: 15px; scroll-behavior: smooth;
+    }
+    #chat-content::-webkit-scrollbar { width: 6px; }
+    #chat-content::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
+
+    /* Bong bóng tin nhắn */
+    .msg-bubble { max-width: 85%; padding: 10px 15px; font-size: 0.85rem; line-height: 1.4; position: relative; word-wrap: break-word;}
+    .msg-user { 
+        background: linear-gradient(135deg, #e3f2fd, #bbdefb); color: #0d47a1; 
+        border-radius: 18px 18px 0 18px; align-self: flex-end; font-weight: 600;
+        box-shadow: 0 2px 5px rgba(13, 71, 161, 0.1);
+    }
+    .msg-ai { 
+        background: #fff; color: #333; border: 1px solid #eee;
+        border-radius: 18px 18px 18px 0; align-self: flex-start; font-weight: 500;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    
+    /* Khung nhập liệu */
+    .chat-input-group { padding: 15px; background: #fff; border-top: 1px solid #eee; display: flex; gap: 10px; z-index: 2;}
+    .chat-input-group input { 
+        flex: 1; border-radius: 20px; border: 1px solid #ddd; 
+        padding: 10px 15px; outline: none; font-size: 0.85rem; transition: 0.3s; background: #f9f9f9;
+    }
+    .chat-input-group input:focus { border-color: var(--primary-color); background: #fff; box-shadow: 0 0 0 3px rgba(23, 63, 95, 0.1);}
+    .chat-input-group button { 
+        background: linear-gradient(135deg, var(--primary-color), var(--accent-color)); 
+        color: white; border: none; border-radius: 50%; width: 42px; height: 42px; 
+        display: flex; align-items: center; justify-content: center; transition: 0.3s; box-shadow: 0 4px 10px rgba(237, 85, 59, 0.3);
+    }
+    .chat-input-group button:hover { transform: scale(1.1); }
+
+    /* Nút kích hoạt Chatbot (Có hiệu ứng nhịp đập) */
+    .chatbot-btn { 
+        position: fixed; bottom: 30px; right: 30px; width: 65px; height: 65px; 
+        border-radius: 50%; background: linear-gradient(135deg, var(--accent-color), #d4442d); 
+        color: white; display: flex; align-items: center; justify-content: center; 
+        font-size: 28px; cursor: pointer; z-index: 9998; transition: 0.3s;
+        animation: pulse-glow 2s infinite;
+    }
+    .chatbot-btn:hover { transform: scale(1.1) rotate(10deg); animation: none; box-shadow: 0 10px 25px rgba(237, 85, 59, 0.5);}
+    @keyframes pulse-glow {
+        0% { box-shadow: 0 0 0 0 rgba(237, 85, 59, 0.6); }
+        70% { box-shadow: 0 0 0 15px rgba(237, 85, 59, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(237, 85, 59, 0); }
+    }
+    
+    /* Hiệu ứng gõ chữ của AI */
+    .typing-dots span { display: inline-block; width: 6px; height: 6px; background-color: #888; border-radius: 50%; margin: 0 2px; animation: bounce 1.4s infinite ease-in-out both; }
+    .typing-dots span:nth-child(1) { animation-delay: -0.32s; }
+    .typing-dots span:nth-child(2) { animation-delay: -0.16s; }
+    @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
 </style>
 
 <div class="top-bar d-none d-lg-block">
@@ -117,7 +180,6 @@
                                                     </c:when>
                                                 </c:choose>
 
-                                                <%-- 🛑 ĐÃ FIX: Chèn link read-notif để cập nhật DB trước khi bay sang trang chi tiết --%>
                                                 <a class="dropdown-item py-2 ${!n.read ? 'bg-light border-start border-4 border-warning' : 'bg-white text-muted'}" style="white-space: normal;" href="read-notif?nid=${n.notifId}&url=${targetLink}">
                                                     <div class="d-flex align-items-start gap-2 w-100">
                                                         <i class="bi bi-info-circle-fill fs-5 mt-1 ${!n.read ? 'text-warning' : 'text-secondary opacity-50'}"></i>
@@ -195,27 +257,114 @@
 </nav>
 
 <div id="ai-chat-box">
-    <div class="chat-header"><span><i class="bi bi-robot me-2"></i>AI ASSISTANT</span><i class="bi bi-x-lg" onclick="toggleAIChat()" style="cursor:pointer"></i></div>
-    <div id="chat-content" style="flex:1; overflow-y:auto; padding:20px; background:#f9f9f9; color:#333; font-weight:600;">Chào Hải! Sếp cần tìm cuốn sách gì?</div>
-    <div class="chat-input-group"><input type="text" id="user-msg-input" placeholder="Hỏi AI gì đi sếp..."><button onclick="sendChatMessage()"><i class="bi bi-send-fill"></i></button></div>
+    <div class="chat-header">
+        <span class="fs-6"><i class="bi bi-robot fs-4 me-2"></i> SMART AI</span>
+        <i class="bi bi-x-lg fs-5" onclick="toggleAIChat()" style="cursor:pointer; opacity: 0.8; transition: 0.3s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.8'"></i>
+    </div>
+    
+    <div id="chat-content">
+        <div class="msg-bubble msg-ai">
+            <div class="d-flex align-items-center mb-1"><i class="bi bi-stars text-warning me-1"></i><strong style="font-size:0.75rem; color:#ED553B;">AI Assistant</strong></div>
+            Chào Hải! Sếp cần em tư vấn cuốn sách nào hay có tâm sự gì muốn giải bày không? 🥰
+        </div>
+    </div>
+    
+    <div class="chat-input-group">
+        <input type="text" id="user-msg-input" placeholder="Gõ tin nhắn cho AI..." autocomplete="off">
+        <button onclick="sendChatMessage()"><i class="bi bi-send-fill fs-5"></i></button>
+    </div>
 </div>
-<div class="chatbot-btn" onclick="toggleAIChat()"><i class="bi bi-chat-right-dots-fill"></i></div>
-
-<script>
-    function toggleAIChat() { const box = document.getElementById('ai-chat-box'); box.style.display = (box.style.display === 'flex') ? 'none' : 'flex'; }
-    function sendChatMessage() {
-        const input = document.getElementById('user-msg-input');
-        const content = document.getElementById('chat-content');
-        if(input.value.trim()){
-            content.innerHTML += `<div style="text-align:right; margin-bottom:10px;"><span style="background:#e3f2fd; padding:8px 12px; border-radius:15px; display:inline-block; font-size:0.85rem; font-weight:600;">` + input.value + `</span></div>`;
-            input.value = ''; content.scrollTop = content.scrollHeight;
-        }
-    }
-</script>
+<div class="chatbot-btn" onclick="toggleAIChat()" title="Chat với AI"><i class="bi bi-chat-dots-fill"></i></div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
+    // 🛑 1. PHỤC HỒI TRÍ NHỚ KHI VỪA LOAD TRANG
+    document.addEventListener("DOMContentLoaded", function() {
+        const savedChat = sessionStorage.getItem('smartLibChatHistory');
+        const contentBox = document.getElementById('chat-content');
+        
+        // Nếu đã có lịch sử chat trong session thì moi ra in lại
+        if (savedChat) {
+            contentBox.innerHTML = savedChat;
+            contentBox.scrollTop = contentBox.scrollHeight;
+        }
+    });
+
+    // 2. Bật tắt khung chat
+    function toggleAIChat() { 
+        const box = document.getElementById('ai-chat-box'); 
+        box.style.display = (box.style.display === 'flex') ? 'none' : 'flex'; 
+        if(box.style.display === 'flex') document.getElementById('user-msg-input').focus();
+    }
+
+    // 3. Bắt sự kiện ấn phím Enter để gửi
+    document.getElementById("user-msg-input").addEventListener("keypress", function(event) {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            sendChatMessage();
+        }
+    });
+
+    // 🛑 4. HÀM GỬI VÀ NHẬN TIN NHẮN TỪ SERVLET CÓ LƯU TRÍ NHỚ 🛑
+    function sendChatMessage() {
+        const input = document.getElementById('user-msg-input');
+        const content = document.getElementById('chat-content');
+        const msg = input.value.trim();
+        
+        if(msg) {
+            // In tin nhắn của Sếp
+            content.innerHTML += `<div class="msg-bubble msg-user">` + msg + `</div>`;
+            input.value = ''; 
+            content.scrollTop = content.scrollHeight;
+            
+            // 💾 LƯU LỊCH SỬ NGAY LẬP TỨC
+            sessionStorage.setItem('smartLibChatHistory', content.innerHTML);
+            
+            // Hiện hiệu ứng AI đang gõ chữ...
+            const typingId = "typing-" + Date.now();
+            content.innerHTML += `
+                <div id="`+typingId+`" class="msg-bubble msg-ai" style="padding: 12px 15px;">
+                    <div class="typing-dots"><span></span><span></span><span></span></div>
+                </div>`;
+            content.scrollTop = content.scrollHeight;
+
+            // GỌI API TỚI CHATBOT SERVLET
+            fetch('chatbot', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: 'message=' + encodeURIComponent(msg)
+            })
+            .then(response => response.text())
+            .then(data => {
+                // Xóa cục "đang gõ"
+                const typingEl = document.getElementById(typingId);
+                if(typingEl) typingEl.remove();
+                
+                // In câu trả lời của AI ra màn hình
+                content.innerHTML += `
+                    <div class="msg-bubble msg-ai">
+                        <div class="d-flex align-items-center mb-1"><i class="bi bi-stars text-warning me-1"></i><strong style="font-size:0.75rem; color:#ED553B;">AI Assistant</strong></div>
+                        ` + data + `
+                    </div>`;
+                content.scrollTop = content.scrollHeight;
+                
+                // 💾 LƯU LỊCH SỬ SAU KHI AI TRẢ LỜI XONG
+                sessionStorage.setItem('smartLibChatHistory', content.innerHTML);
+            })
+            .catch(err => {
+                const typingEl = document.getElementById(typingId);
+                if(typingEl) typingEl.remove();
+                content.innerHTML += `<div class="msg-bubble msg-ai" style="color: red;"><i class="bi bi-exclamation-triangle-fill me-1"></i> Oops! AI đang bận rộn, sếp thử lại sau nhé!</div>`;
+                content.scrollTop = content.scrollHeight;
+                
+                // 💾 LƯU LỊCH SỬ CẢ THÔNG BÁO LỖI
+                sessionStorage.setItem('smartLibChatHistory', content.innerHTML);
+            });
+        }
+    }
+
+    // 🛑 5. XỬ LÝ THÔNG BÁO SWEET ALERT (GIỮ NGUYÊN HOÀN TOÀN) 🛑
     window.onload = function() {
         <c:if test="${not empty sessionScope.borrowMsg}">
             Swal.fire({ icon: 'info', title: 'Thông báo', text: '${sessionScope.borrowMsg}', confirmButtonColor: '#173F5F' });

@@ -39,6 +39,12 @@
 <body>
     <jsp:include page="header.jsp" />
 
+    <%-- 🛑 ĐÃ FIX CHÍ MẠNG: TỰ ĐỘNG TÍNH LẠI TỔNG TIỀN NẾU LÀ MUA LẺ --%>
+    <c:set var="actualTotal" value="${totalAmount}" />
+    <c:if test="${checkoutType == 'single'}">
+        <c:set var="actualTotal" value="${sach_mua.price * quantity_mua}" />
+    </c:if>
+
     <div class="container checkout-container">
         <c:if test="${empty sach_mua}">
             <div class="text-center py-5">
@@ -84,8 +90,8 @@
                                     <p class="text-muted small mb-3"><i class="bi bi-person-fill me-1"></i> ${sach_mua.author}</p>
                                     <div class="d-flex justify-content-between align-items-center border-top pt-3 mt-2">
                                         <span class="badge bg-secondary rounded-pill px-3 py-2 fw-normal">Số lượng: ${quantity_mua}</span>
-                                        <%-- 🛑 ĐÃ FIX: Nhân giá tiền với số lượng để hiển thị đúng thực tế --%>
-                                        <span class="fw-bold text-danger fs-5"><fmt:formatNumber value="${sach_mua.price * quantity_mua}" pattern="###,###"/> đ</span>
+                                        <%-- Đã thay bằng biến actualTotal --%>
+                                        <span class="fw-bold text-danger fs-5"><fmt:formatNumber value="${actualTotal}" pattern="###,###"/> đ</span>
                                     </div>
                                 </div>
                             </div>
@@ -102,7 +108,8 @@
                                 <input type="hidden" name="checkoutType" value="${checkoutType}">
                                 <input type="hidden" name="txt_id_sach" value="${sach_mua.id}">
                                 <input type="hidden" name="quantity_mua" value="${quantity_mua}">
-                                <input type="hidden" name="totalAmount" value="${totalAmount}">
+                                <%-- Cập nhật totalAmount chuẩn bị gửi về Servlet --%>
+                                <input type="hidden" name="totalAmount" value="${actualTotal}">
                                 <input type="hidden" name="voucherCode" id="hiddenVoucherCode" value="">
                                 
                                 <%-- FORM ẨN ĐỊA CHỈ --%>
@@ -141,11 +148,11 @@
                 <div class="col-lg-5">
                     <div class="summary-box shadow-lg text-center position-sticky" style="top: 100px;">
                         <p class="text-uppercase mb-2 opacity-75 small fw-bold">Tổng thanh toán</p>
-                        <div class="mb-3"><span class="text-white opacity-50 text-decoration-line-through d-none" id="oldPriceUI"><fmt:formatNumber value="${totalAmount}" pattern="###,###"/> đ</span></div>
-                        <h1 class="fw-bold text-warning display-5 mb-4" id="finalPriceUI"><fmt:formatNumber value="${totalAmount}" pattern="###,###"/> đ</h1>
+                        <div class="mb-3"><span class="text-white opacity-50 text-decoration-line-through d-none" id="oldPriceUI"><fmt:formatNumber value="${actualTotal}" pattern="###,###"/> đ</span></div>
+                        <h1 class="fw-bold text-warning display-5 mb-4" id="finalPriceUI"><fmt:formatNumber value="${actualTotal}" pattern="###,###"/> đ</h1>
                         <hr class="border-light opacity-25 w-75 mx-auto mb-4">
                         <div class="text-start bg-white bg-opacity-10 p-4 rounded-4">
-                            <div class="d-flex justify-content-between mb-2"><span class="small opacity-75">Tạm tính:</span><span class="small fw-bold"><fmt:formatNumber value="${totalAmount}" pattern="###,###"/> đ</span></div>
+                            <div class="d-flex justify-content-between mb-2"><span class="small opacity-75">Tạm tính:</span><span class="small fw-bold"><fmt:formatNumber value="${actualTotal}" pattern="###,###"/> đ</span></div>
                             <div class="d-flex justify-content-between mb-2 text-warning d-none" id="discountRowUI"><span class="small">Voucher giảm:</span><span class="small fw-bold" id="discountAmountUI">- 0 đ</span></div>
                         </div>
                     </div>
@@ -222,8 +229,9 @@
                     <div class="qr-frame shadow-sm"><img id="qr-img" src="" style="width: 230px; height: 230px;"></div>
                     <div class="mt-3"><span class="badge bg-danger bg-opacity-10 text-danger border border-danger px-3 py-2 rounded-pill">Đang chờ nhận tiền...</span></div>
                     <p class="mt-4 small text-muted">Mã giao dịch: <b id="qr-order-id" class="text-dark"></b></p>
-                    <%-- 🛑 ĐÃ FIX: Hủy bằng JS không làm load lại trang --%>
-                    <button type="button" class="btn btn-sm btn-outline-secondary mt-2 rounded-pill px-4" data-bs-dismiss="modal" onclick="cancelQR()">Hủy giao dịch</button>
+                    
+                    <%-- 🛑 ĐÃ FIX NÚT HỦY: Chặn reload trang mạnh mẽ bằng event.preventDefault() --%>
+                    <button type="button" class="btn btn-sm btn-outline-secondary mt-2 rounded-pill px-4" data-bs-dismiss="modal" onclick="cancelQR(event)">Hủy giao dịch</button>
                 </div>
             </div>
         </div>
@@ -251,7 +259,8 @@
             Swal.fire({ icon: 'success', title: 'Đã lưu', toast: true, position: 'top-end', showConfirmButton: false, timer: 1500 });
         }
 
-        const originalTotal = ${totalAmount};
+        // Đã thay originalTotal bằng biến actualTotal chuẩn xác
+        const originalTotal = ${actualTotal};
         let finalTotal = originalTotal;
 
         function applyVoucher() {
@@ -297,7 +306,6 @@
             }
         };
 
-        // 🛑 ĐÃ FIX: Khai báo biến đếm giờ ra ngoài để dễ bề Dừng lại khi Hủy
         let paymentTimer;
 
         function triggerQRModal() {
@@ -322,7 +330,6 @@
         }
 
         function startPaymentCheck(orderId) {
-            // Gán vòng lặp vào biến để có thể hủy
             paymentTimer = setInterval(() => {
                 fetch('check-payment-status?orderId=' + encodeURIComponent(orderId))
                     .then(res => res.text())
@@ -339,12 +346,13 @@
             }, 3000);
         }
 
-        // 🛑 ĐÃ FIX: Hàm hủy giao dịch ngầm, không tải lại trang
-        function cancelQR() {
+        // 🛑 BỌC THÉP CHO NÚT HỦY: Chặn đứng mọi hành vi tự Load lại trang
+        function cancelQR(e) {
+            if(e) e.preventDefault(); // Chặn mọi hành vi submit/reload mặc định của trình duyệt
             if (paymentTimer) {
-                clearInterval(paymentTimer); // Dừng kiểm tra tiền gửi về
+                clearInterval(paymentTimer); // Dừng bắn API kiểm tra tiền
             }
-            document.getElementById('qr-img').src = ""; // Xóa ảnh QR
+            document.getElementById('qr-img').src = ""; // Xóa ảnh mã QR
         }
     </script>
 </body>

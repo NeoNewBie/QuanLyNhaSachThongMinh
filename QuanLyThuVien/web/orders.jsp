@@ -79,7 +79,7 @@
                                                 <c:when test="${o.status == '1'}"><span class="badge bg-info text-dark">Đang chuẩn bị</span></c:when>
                                                 <c:when test="${o.status == '2'}"><span class="badge bg-success">Sẵn sàng nhận</span></c:when>
                                                 <c:when test="${o.status == '3'}"><span class="badge bg-primary">Đang mượn</span></c:when>
-                                                <c:when test="${o.status == '4'}"><span class="badge bg-secondary">Đã trả sách</span></c:when>
+                                                <c:when test="${o.status == '4'}"><span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Giao thành công</span></c:when>
                                                 <c:when test="${o.status == '5'}"><span class="badge bg-danger">Đã hủy</span></c:when>
                                                 <c:otherwise><span class="badge bg-dark">Code lỗi: ${o.status}</span></c:otherwise>
                                             </c:choose>

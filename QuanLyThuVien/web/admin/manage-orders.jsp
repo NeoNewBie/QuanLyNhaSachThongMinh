@@ -34,12 +34,9 @@
                 <a href="${pageContext.request.contextPath}/admin/manage-orders" class="text-decoration-none p-2 active">
                     <i class="bi bi-cart-check me-2"></i> Quản lý Đơn hàng
                 </a>
-
-                <%-- 🛑 ĐÃ THÊM MENU QUẢN LÝ MƯỢN SÁCH VÀO ĐÂY --%>
                 <a href="${pageContext.request.contextPath}/admin/manage-borrows" class="text-decoration-none p-2">
                     <i class="bi bi-journal-check me-2"></i> Quản lý Mượn Sách
                 </a>
-
                 <a href="${pageContext.request.contextPath}/admin/manage-users" class="text-decoration-none p-2">
                     <i class="bi bi-people me-2"></i> Quản lý Người dùng
                 </a>
@@ -84,11 +81,14 @@
                                                 <span class="badge bg-info text-dark px-3 py-2 rounded-pill"><i class="bi bi-wallet2 me-1"></i> Đã thanh toán</span>
                                             </c:when>
                                             <c:when test="${o.status == '2'}">
-                                                <span class="badge bg-primary px-3 py-2 rounded-pill"><i class="bi bi-box-seam me-1"></i> Đã duyệt / Sẵn sàng</span>
+                                                <span class="badge bg-primary px-3 py-2 rounded-pill"><i class="bi bi-truck me-1"></i> Đang giao hàng</span>
                                             </c:when>
-                                            <c:when test="${o.status == '3' || o.status == 'Đã giao'}">
-                                                <span class="badge bg-success px-3 py-2 rounded-pill"><i class="bi bi-check-circle me-1"></i> Hoàn thành</span>
+                                            
+                                            <%-- 🛑 ĐÃ FIX LỖI TYPO: Đổi 'order.status' thành 'o.status' --%>
+                                            <c:when test="${o.status == '3' || o.status == '4'}">
+                                                <span class="badge bg-success rounded-pill px-3 py-2 shadow-sm"><i class="bi bi-check-circle-fill me-1"></i> Giao thành công</span>
                                             </c:when>
+                                            
                                             <c:when test="${o.status == '5'}">
                                                 <span class="badge bg-danger px-3 py-2 rounded-pill"><i class="bi bi-x-circle me-1"></i> Đã hủy</span>
                                             </c:when>
