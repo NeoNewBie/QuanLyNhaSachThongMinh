@@ -282,4 +282,15 @@ public boolean checkIsPaid(String orderId) {
             e.printStackTrace();
         }
     }
+    // 🛑 Trừ tiền thật: Cập nhật giá trị đơn hàng mới nhất sau khi áp Voucher
+    public void applyDiscountToLatestOrder(int userId, double discountAmount) {
+        String query = "UPDATE Orders SET TotalPrice = CASE WHEN TotalPrice - ? < 0 THEN 0 ELSE TotalPrice - ? END WHERE OrderID = (SELECT TOP 1 OrderID FROM Orders WHERE UserID = ? ORDER BY OrderDate DESC)";
+        try (java.sql.Connection conn = new utils.DBContext().getConnection();
+             java.sql.PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setDouble(1, discountAmount);
+            ps.setDouble(2, discountAmount);
+            ps.setInt(3, userId);
+            ps.executeUpdate();
+        } catch (Exception e) { e.printStackTrace(); }
+    }
 }

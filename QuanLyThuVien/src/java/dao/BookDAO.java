@@ -382,6 +382,7 @@ public class BookDAO {
     }
     // 🛑 HÀM LỌC TỔNG HỢP (VIP PRO) - Loại bỏ Ebook
    // 🛑 HÀM LỌC TỔNG HỢP (VIP PRO) - CÁCH LY 100% EBOOK
+   // 🛑 HÀM LỌC TỔNG HỢP (VIP PRO) - CÁCH LY 100% EBOOK (Đã Fix Tên Cột)
     public List<model.Book> getFilteredBooks(String categorySlug, String cateId, String searchTxt, String minPrice, String maxPrice, String sort) {
         List<model.Book> list = new java.util.ArrayList<>();
         
@@ -392,7 +393,8 @@ public class BookDAO {
         if (cateId != null && !cateId.trim().isEmpty()) {
             query.append(" AND CategoryID = ").append(cateId).append(" ");
         } else if (categorySlug != null && !categorySlug.trim().isEmpty() && !categorySlug.equals("all")) {
-            if ("new".equals(categorySlug)) query.append(" AND DATEDIFF(day, PublicationDate, GETDATE()) <= 30 ");
+            // 🛑 ĐÃ FIX: Đổi 'PublicationDate' thành 'ReleaseDate' cho khớp với Database của sếp
+            if ("new".equals(categorySlug)) query.append(" AND DATEDIFF(day, ReleaseDate, GETDATE()) <= 30 ");
             // Thêm rule nếu sếp có danh mục hot/featured
         }
         
@@ -412,8 +414,8 @@ public class BookDAO {
         // 5. Sắp xếp VIP PRO (Chuẩn Shopee)
         if (sort != null && !sort.isEmpty()) {
             switch (sort) {
-                case "bestseller": query.append(" ORDER BY BookID ASC "); break; // Đổi thành ORDER BY SoLuongBan DESC nếu DB sếp có
-                case "popular": query.append(" ORDER BY Title ASC "); break;     // Đổi thành ORDER BY LuotXem DESC nếu DB sếp có
+                case "bestseller": query.append(" ORDER BY BookID ASC "); break; 
+                case "popular": query.append(" ORDER BY Title ASC "); break;     
                 case "newest": query.append(" ORDER BY BookID DESC "); break;
                 case "priceAsc": query.append(" ORDER BY Price ASC "); break;
                 case "priceDesc": query.append(" ORDER BY Price DESC "); break;

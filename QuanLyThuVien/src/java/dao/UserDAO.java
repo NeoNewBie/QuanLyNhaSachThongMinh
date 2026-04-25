@@ -160,4 +160,16 @@ public class UserDAO {
         }
         return false;
     }
+    // 🛑 Cập nhật địa chỉ nhận hàng vào Profile khách hàng
+    public void updateShippingInfo(int userId, String fullName, String phone, String address) {
+        String query = "UPDATE Users SET FullName = ?, Phone = ?, Address = ? WHERE UserID = ?";
+        try (java.sql.Connection conn = new utils.DBContext().getConnection();
+             java.sql.PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setString(1, fullName);
+            ps.setString(2, phone);
+            ps.setString(3, address);
+            ps.setInt(4, userId);
+            ps.executeUpdate();
+        } catch (Exception e) { e.printStackTrace(); }
+    }
 }
