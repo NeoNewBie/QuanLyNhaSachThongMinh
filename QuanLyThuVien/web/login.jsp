@@ -6,34 +6,31 @@
     <title>Đăng nhập - Smart Lib</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
     <style>
         :root { --primary-color: #173F5F; --accent-color: #ED553B; }
         body { background: #f0f2f5; height: 100vh; display: flex; align-items: center; font-family: 'Inter', sans-serif; }
-        .auth-card { border: none; border-radius: 40px; box-shadow: 0 30px 60px rgba(0,0,0,0.12); padding: 60px; max-width: 500px; width: 100%; margin: auto; }
+        .auth-card { border: none; border-radius: 40px; box-shadow: 0 30px 60px rgba(0,0,0,0.12); padding: 60px; max-width: 500px; width: 100%; margin: auto; background: #fff;}
         .form-control { border-radius: 50px; padding: 15px 25px; border: 1px solid #eee; background: #f8f9fa; }
-        .btn-auth { background: var(--accent-color); color: white; border-radius: 50px; padding: 15px; font-weight: 800; width: 100%; border: none; margin-top: 20px; transition: 0.3s; text-transform: uppercase; }
-        .btn-auth:hover { background: var(--primary-color); transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        .btn-auth { background: var(--primary-color); color: white; border-radius: 50px; padding: 15px; font-weight: 800; width: 100%; border: none; margin-top: 10px; transition: 0.3s; text-transform: uppercase; }
+        .btn-auth:hover { background: var(--accent-color); transform: translateY(-5px); }
     </style>
 </head>
 <body>
-    <div class="card auth-card bg-white">
-        <div class="text-center mb-4">
-            <h2 class="fw-bold" style="color: var(--primary-color);">CHÀO ÔNG QUAY LẠI!</h2>
-            <p class="text-muted">Đăng nhập để mượn sách ngay nhé Hải</p>
+    <div class="auth-card">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold" style="color: var(--primary-color);">ĐĂNG NHẬP</h2>
+            <p class="text-muted small">Chào mừng sếp quay trở lại Smart Lib</p>
         </div>
 
-        <%-- 1. THÔNG BÁO LỖI (Dùng JSTL cũ của sếp) --%>
-        <c:if test="${not empty requestScope.mess}">
-            <div class="alert alert-danger text-center fw-bold mb-4" role="alert" style="border-radius: 15px;">
-                <i class="bi bi-exclamation-triangle-fill me-2"></i> ${requestScope.mess}
+        <c:if test="${not empty mess}">
+            <div class="alert alert-danger border-0 rounded-pill small py-2 px-4 mb-4 text-center">
+                <i class="bi bi-exclamation-circle-fill me-1"></i> ${mess}
             </div>
         </c:if>
 
         <form action="login" method="POST">
-            <div class="mb-3">
+            <div class="mb-4">
                 <input type="text" name="user" class="form-control" placeholder="Tên đăng nhập" value="${cookie.cUser.value}" required>
             </div>
             <div class="mb-3">
@@ -55,18 +52,18 @@
         </form>
     </div>
 
-    <%-- 2. POPUP THÀNH CÔNG (Khi từ trang Reset Password quay về) --%>
+    <%-- POPUP THÔNG BÁO TỪ CÁC TRANG KHÁC ĐÁ VỀ --%>
     <c:if test="${param.msg == 'reset_success'}">
         <script>
-            Swal.fire({
-                title: 'THÀNH CÔNG!',
-                text: 'Mật khẩu mới đã được cập nhật. Đăng nhập ngay thôi sếp Hải ơi!',
-                icon: 'success',
-                confirmButtonColor: '#173F5F',
-                confirmButtonText: 'VÀO VIỆC LUÔN'
-            });
+            Swal.fire({ title: 'THÀNH CÔNG!', text: 'Mật khẩu mới đã được cập nhật. Đăng nhập ngay thôi sếp Hải ơi!', icon: 'success', confirmButtonColor: '#173F5F' });
         </script>
     </c:if>
-
+    
+    <%-- 🛑 ĐÃ FIX: CHỚP ĐƯỢC MSG ĐĂNG KÝ VÀ BẬT THÔNG BÁO NÈ --%>
+    <c:if test="${param.msg == 'register_success'}">
+        <script>
+            Swal.fire({ title: 'CHÀO MỪNG SẾP!', text: 'Đăng ký tài khoản thành công! Đăng nhập để lụm sách nào.', icon: 'success', confirmButtonColor: '#173F5F' });
+        </script>
+    </c:if>
 </body>
 </html>

@@ -13,7 +13,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-// 🛑 FILTER NÀY SẼ QUÉT QUA TOÀN BỘ CÁC ĐƯỜNG DẪN TRONG WEB
 @WebFilter(filterName = "AuthorizationFilter", urlPatterns = {"/*"})
 public class AuthorizationFilter implements Filter {
 
@@ -21,36 +20,54 @@ public class AuthorizationFilter implements Filter {
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
 
-        HttpServletRequest req = (HttpServletRequest) request;
-        HttpServletResponse res = (HttpServletResponse) response;
-        HttpSession session = req.getSession();
-        
-        // 1. Lấy URL mà người dùng đang muốn truy cập
-        String uri = req.getRequestURI();
-        
-        // 2. Lấy thông tin sếp Hải đã đăng nhập trong Session
-        User acc = (User) session.getAttribute("acc");
+        HttpServletRequest req   = (HttpServletRequest) request;
+        HttpServletResponse res  = (HttpServletResponse) response;
+        HttpSession session      = req.getSession();
 
-        // 3. DANH SÁCH "VÙNG CẤM"
-        
-        // Nếu đòi vào trang Admin mà: Chưa đăng nhập HOẶC Quyền không phải Admin (Role != 1)
+        String uri = req.getRequestURI();
+        User acc   = (User) session.getAttribute("acc");
+
+        // ===== VÙNG CHỈ ADMIN =====
+        // Nếu vào trang admin mà chưa đăng nhập hoặc không phải admin
         if (uri.contains("/admin/") || uri.contains("/manage-")) {
             if (acc == null || acc.getRoleId() != 1) {
                 res.sendRedirect(req.getContextPath() + "/login");
                 return;
             }
         }
-        
-        // Nếu đòi vào trang Cá nhân, Lịch sử mượn, Giỏ hàng mà chưa đăng nhập
-        if (uri.contains("/profile") || uri.contains("/borrow-") || uri.contains("/cart")) {
+
+        // ===== VÙNG CẦN ĐĂNG NHẬP =====
+        // [ĐÃ SỬA LỖI #14] Bổ sung đầy đủ các URL cần bảo vệ
+        if (requiresLogin(uri)) {
             if (acc == null) {
                 res.sendRedirect(req.getContextPath() + "/login");
                 return;
             }
         }
 
-        // Nếu mọi thứ ok thì cho đi tiếp
         chain.doFilter(request, response);
+    }
+
+    /**
+     * Kiểm tra URI có cần đăng nhập không
+     */
+    private boolean requiresLogin(String uri) {
+        return uri.contains("/profile")
+            || uri.contains("/borrow")
+            || uri.contains("/cart")
+            || uri.contains("/checkout")
+            || uri.contains("/process-checkout")
+            || uri.contains("/orders")
+            || uri.contains("/order-detail")
+            || uri.contains("/order-success")
+            || uri.contains("/track-order")
+            || uri.contains("/change-password")
+            || uri.contains("/update-profile")
+            || uri.contains("/notifications")
+            || uri.contains("/wishlist")
+            || uri.contains("/read")
+            || uri.contains("/payment")
+            || uri.contains("/unlock-chapter");
     }
 
     @Override

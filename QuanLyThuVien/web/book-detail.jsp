@@ -78,7 +78,6 @@
                     <p class="mb-0 text-secondary" style="line-height: 1.8;">${detail.description}</p>
                 </div>
 
-                <%-- 🛑 ĐÂY LÀ CHỖ GIAO DIỆN HẾT HÀNG ĐƯỢC CHÈN VÀO --%>
                 <div class="d-flex flex-wrap gap-3 mb-5">
                     <c:choose>
                         <c:when test="${detail.isEbook == 1}">
@@ -110,7 +109,7 @@
                     </c:choose>
                 </div>
 
-                <%-- PHẦN RELATED BOOKS (CÓ THỂ SẾP CŨNG THÍCH) --%>
+                <%-- PHẦN RELATED BOOKS --%>
                 <div class="mt-5">
                     <h4 class="fw-bold mb-4" style="color: var(--primary-color);">CÓ THỂ SẾP CŨNG THÍCH</h4>
                     <div class="row row-cols-2 row-cols-lg-4 g-3">
@@ -133,10 +132,12 @@
                 <%-- PHẦN ĐÁNH GIÁ TỪ ĐỘC GIẢ --%>
                 <div class="container mt-5 mb-5 p-0">
                     <h4 class="fw-bold mb-4 border-bottom pb-2" style="color: #173F5F;">ĐÁNH GIÁ TỪ ĐỘC GIẢ</h4>
-                    <div class="mb-5">
+                    
+                    <%-- 🛑 TÔI CHỈ THÊM ID Ở ĐÂY CHO JS DỄ TÌM ĐỂ NHÉT BÌNH LUẬN VÀO --%>
+                    <div class="mb-5" id="review-list-container">
                         <c:choose>
                             <c:when test="${empty listR}">
-                                <div class="text-center py-4 bg-light rounded-3 text-muted"><i class="bi bi-chat-square-dots fs-1 d-block mb-2"></i>Chưa có bình luận nào. Sếp hãy là người đầu tiên đánh giá nhé!</div>
+                                <div class="text-center py-4 bg-light rounded-3 text-muted" id="empty-review-msg"><i class="bi bi-chat-square-dots fs-1 d-block mb-2"></i>Chưa có bình luận nào. Sếp hãy là người đầu tiên đánh giá nhé!</div>
                             </c:when>
                             <c:otherwise>
                                 <c:forEach items="${listR}" var="r">
@@ -158,11 +159,12 @@
 
                     <div class="p-4 bg-light rounded-3 border">
                         <h5 class="fw-bold mb-3">Viết nhận xét của bạn</h5>
-                        <form action="add-review" method="POST">
+                        <%-- 🛑 ĐÃ SỬA CÁI FORM THÀNH GỌI AJAX TRỰC TIẾP TRÊN TRANG --%>
+                        <form id="ajaxReviewForm" onsubmit="submitReviewAsync(event)">
                             <input type="hidden" name="txt_id_sach" value="${detail.id}">
                             <div class="mb-3">
                                 <label class="form-label fw-bold small text-muted">CHẤM ĐIỂM SÁCH</label>
-                                <select name="txt_so_sao" class="form-select border-0 shadow-sm">
+                                <select name="txt_so_sao" class="form-select border-0 shadow-sm" id="star-rating">
                                     <option value="5">⭐⭐⭐⭐⭐ (Tuyệt vời)</option>
                                     <option value="4">⭐⭐⭐⭐ (Rất hay)</option>
                                     <option value="3">⭐⭐⭐ (Bình thường)</option>
@@ -236,6 +238,61 @@
         function buyNow(id) {
             const qty = document.getElementById('detail-qty').value;
             window.location.href = 'checkout?id=' + id + '&quantity=' + qty + '&checkoutType=single';
+        }
+
+        // 🛑 ĐÂY LÀ HÀM BÌNH LUẬN AJAX MỚI, KHÔNG ĐỤNG CHẠM CSS GÌ CỦA SẾP!
+        function submitReviewAsync(e) {
+            e.preventDefault(); 
+            const form = e.target;
+            const formData = new URLSearchParams(new FormData(form));
+
+            fetch('add-review', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.status === 'unauthorized') {
+                    window.location.href = 'login.jsp';
+                    return;
+                }
+                if(data.status === 'success') {
+                    // Lấy số sao khách vừa chọn
+                    const starCount = parseInt(document.getElementById('star-rating').value);
+                    let starsHtml = '';
+                    for(let i=0; i<starCount; i++) starsHtml += '★';
+
+                    // Lấy chữ cái đầu của tên (Giả lập vì JS không đọc được session trực tiếp như JSP)
+                    const firstChar = '${sessionScope.acc != null ? sessionScope.acc.username.substring(0,1).toUpperCase() : "U"}';
+                    const userName = '${sessionScope.acc != null ? sessionScope.acc.username : "Người dùng"}';
+
+                    // Dựng lại khối HTML y chang CSS gốc của sếp
+                    let newReview = `
+                        <div class="py-3 border-bottom">
+                            <div class="d-flex align-items-start">
+                                <div class="me-3" style="width: 45px; height: 45px; background-color: #ED553B; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">\${firstChar}</div>
+                                <div class="flex-grow-1">
+                                    <div class="fw-bold text-dark">\${userName}</div>
+                                    <div class="text-warning small">\${starsHtml}</div>
+                                    <div class="text-muted small mb-2">Vừa xong</div>
+                                    <p class="mb-0 text-dark">` + form.txt_binh_luan.value + `</p>
+                                </div>
+                            </div>
+                        </div>`;
+                    
+                    const listContainer = document.getElementById('review-list-container');
+                    if(listContainer) {
+                        // Xóa dòng "Chưa có bình luận nào" nếu nó đang hiện
+                        const emptyMsg = document.getElementById('empty-review-msg');
+                        if (emptyMsg) emptyMsg.remove();
+                        
+                        // Nhét bình luận mới lên đầu
+                        listContainer.insertAdjacentHTML('afterbegin', newReview);
+                    }
+                    form.reset(); 
+                    Swal.fire({icon: 'success', title: 'Đã gửi bình luận!', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000});
+                }
+            });
         }
     </script>
 </body>

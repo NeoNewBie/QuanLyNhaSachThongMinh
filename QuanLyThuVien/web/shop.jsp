@@ -9,23 +9,14 @@
     <title>${pageTitle} - Smart Lib</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-    
-    <%-- 🛑 Chỉ để duy nhất 1 thẻ gọi Bootstrap ở đây --%>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    
     <style>
         body { background: #F8F9FA; color: #333; }
-        
-        /* SIDEBAR & MENU ACTIVE */
         .sidebar-filter { background: #fff; border-radius: 16px; padding: 25px; border: 1px solid #eee; position: sticky; top: 80px; }
         .filter-section-title { font-size: 0.9rem; font-weight: 800; color: #173F5F; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px;}
-        
         .cate-item { display: block; padding: 10px 15px; color: #555; font-weight: 600; font-size: 0.95rem; border-radius: 8px; text-decoration: none; margin-bottom: 5px; transition: 0.3s; cursor: pointer; }
         .cate-item:hover { color: #ED553B; background: #fffcfb; padding-left: 20px; }
-        
         .cate-item.active-cate { color: #ED553B; background: #FFF5F3; font-weight: 700; border-left: 4px solid #ED553B; }
-
-        /* SORT BAR SHOPEE STYLE */
         .sort-bar { background: #fff; padding: 12px 20px; border-radius: 12px; border: 1px solid #eee; display: flex; align-items: center; margin-bottom: 25px; }
         .sort-label { font-size: 0.9rem; font-weight: 700; color: #777; margin-right: 15px; }
         .btn-sort { background: #f1f3f4; color: #444; font-weight: 600; font-size: 0.9rem; border: none; padding: 8px 20px; border-radius: 8px; margin-right: 10px; transition: 0.2s; }
@@ -33,8 +24,6 @@
         .btn-sort.active { background: var(--primary-color); color: #fff; box-shadow: 0 4px 10px rgba(23, 63, 95, 0.2); }
         .sort-select { background: #f1f3f4; border: none; font-weight: 600; font-size: 0.9rem; color: #444; border-radius: 8px; padding: 8px 30px 8px 15px; cursor: pointer; outline: none; }
         .sort-select.active { background: var(--primary-color); color: white; }
-
-        /* Card Sách hiện đại */
         .book-card-new { background: #fff; border-radius: 16px; transition: 0.4s; border: 1px solid #eee; height: 100%; overflow: hidden; display: flex; flex-direction: column;}
         .book-card-new:hover { transform: translateY(-8px); box-shadow: 0 15px 35px rgba(0,0,0,0.08); }
         .image-box { height: 240px; background: #fdfdfd; display: flex; align-items: center; justify-content: center; padding: 20px; transition: 0.3s; }
@@ -45,12 +34,9 @@
         .book-title:hover { color: #ED553B; }
         .book-author { font-size: 0.8rem; color: #999; margin-bottom: 10px; }
         .book-price { font-size: 1.1rem; font-weight: 800; color: #ED553B; }
-
         .btn-detail { display: block; text-align: center; text-decoration: none; background: #F1F3F4; color: #222; font-weight: 700; font-size: 0.85rem; border-radius: 8px; border: none; padding: 12px; width: 100%; transition: 0.3s;}
         .btn-detail:hover { background: #173F5F; color: #fff; }
         .btn-cart-add { border-radius: 8px; padding: 12px; font-size: 1.1rem; transition: 0.3s; }
-
-        /* Phân trang */
         .custom-pagination { display: flex; justify-content: center; gap: 10px; list-style: none; padding: 0; margin-top: 50px; }
         .custom-pagination li a { width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-weight: 700; font-size: 1rem; text-decoration: none; transition: all 0.3s ease; }
         .custom-pagination li.page-item .page-link { background: transparent; color: #a0a0a0; border: 1px solid #e5e5e5; }
@@ -59,12 +45,19 @@
         .custom-pagination li.page-nav .page-link { color: #ED553B; border: 2px solid rgba(237, 85, 59, 0.3); background: transparent; }
         .custom-pagination li.page-nav:hover .page-link { background: #FFF5F3; border-color: #ED553B; }
         .custom-pagination li.disabled .page-link { border-color: #eee; color: #ccc; pointer-events: none; }
+
+        /* ================== CSS CHO DROPDOWN TÌM KIẾM ================== */
+        .search-dropdown { position: absolute; top: 110%; left: 0; right: 0; background: white; border-radius: 12px; box-shadow: 0 15px 40px rgba(0,0,0,0.15); z-index: 1000; padding: 20px; max-height: 400px; overflow-y: auto; border: 1px solid #eee; transition: all 0.3s ease; }
+        .search-tag { display: inline-block; padding: 8px 15px; background: #f1f3f4; border-radius: 20px; font-size: 0.85rem; font-weight: 600; color: #555; margin: 5px 5px 5px 0; cursor: pointer; transition: 0.2s; }
+        .search-tag:hover { background: #ED553B; color: white; }
+        .live-item { display: flex; align-items: center; gap: 15px; padding: 10px; border-bottom: 1px solid #f5f5f5; text-decoration: none; color: #333; transition: 0.2s; border-radius: 8px; }
+        .live-item:hover { background: #f8f9fa; }
+        .live-item img { width: 45px; height: 60px; object-fit: cover; border-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
     </style>
 </head>
 <body>
     <jsp:include page="header.jsp" />
 
-    <%-- FORM ẨN LƯU TRỮ TRÍ NHỚ BỘ LỌC --%>
     <form id="masterFilterForm" action="shop" method="GET" class="d-none">
         <input type="hidden" name="category" value="${activeCate}">
         <input type="hidden" name="cateId" id="formCateId" value="${cateIdS}">
@@ -76,19 +69,46 @@
     </form>
 
     <div class="container mt-4 mb-5">
-        <%-- SEARCH BAR --%>
         <div class="row mb-4 align-items-center bg-white p-3 rounded-4 shadow-sm border mx-0">
-            <div class="col-12 position-relative">
+            <div class="col-12 position-relative" id="searchContainer">
                 <div class="input-group">
                     <span class="input-group-text bg-light border-end-0 rounded-start-pill text-muted px-4"><i class="bi bi-search"></i></span>
-                    <input type="text" id="liveSearchInput" class="form-control bg-light border-start-0 py-3 fw-bold" placeholder="Tìm tên sách, tác giả..." value="${txtS}" onkeypress="if(event.key === 'Enter') executeSearch(this.value)">
+                    <input type="text" id="liveSearchInput" class="form-control bg-light border-start-0 py-3 fw-bold" 
+                           placeholder="Tìm tên sách, tác giả..." value="${txtS}" autocomplete="off"
+                           oninput="handleLiveSearch(this.value)" onfocus="showDropdown()" 
+                           onkeypress="if(event.key === 'Enter') executeSearch(this.value)">
                     <button type="button" class="btn btn-dark rounded-end-pill px-5 fw-bold" onclick="executeSearch(document.getElementById('liveSearchInput').value)">TÌM KIẾM</button>
+                </div>
+
+                <div id="searchDropdown" class="search-dropdown d-none">
+                    <div id="search-default-box">
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="fw-bold text-muted" style="font-size: 0.8rem; letter-spacing: 1px;">LỊCH SỬ TÌM KIẾM</span>
+                                <a href="javascript:void(0)" class="text-danger small text-decoration-none" onclick="clearHistory()">Xóa lịch sử</a>
+                            </div>
+                            <div id="history-list"></div>
+                        </div>
+                        <div>
+                            <span class="fw-bold text-muted" style="font-size: 0.8rem; letter-spacing: 1px;">TỪ KHÓA HOT <i class="bi bi-fire text-danger"></i></span>
+                            <div class="mt-2">
+                                <span class="search-tag" onclick="executeSearch('Đắc Nhân Tâm')">Đắc Nhân Tâm</span>
+                                <span class="search-tag" onclick="executeSearch('Java')">Lập trình Java</span>
+                                <span class="search-tag" onclick="executeSearch('Kinh tế')">Kinh tế</span>
+                                <span class="search-tag" onclick="executeSearch('Truyện tranh')">Truyện tranh</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="search-result-box" class="d-none">
+                        <span class="fw-bold text-muted mb-2 d-block" style="font-size: 0.8rem;">GỢI Ý KẾT QUẢ</span>
+                        <div id="live-search-results"></div>
+                    </div>
                 </div>
             </div>
         </div>
 
         <div class="row g-4">
-            <%-- SIDEBAR LỌC --%>
             <div class="col-lg-3">
                 <div class="sidebar-filter shadow-sm">
                     <div class="mb-5">
@@ -116,13 +136,11 @@
                 </div>
             </div>
 
-            <%-- CONTENT SÁCH --%>
             <div class="col-lg-9">
                 <h4 class="fw-bold mb-3" style="color: #173F5F; text-transform: uppercase;">
                     ${pageTitle} <span class="text-danger small ms-2">(${listB.size()} kết quả)</span>
                 </h4>
 
-                <%-- SORT BAR CHUẨN SHOPEE --%>
                 <c:if test="${activeCate != 'ebook'}">
                     <div class="sort-bar shadow-sm">
                         <span class="sort-label">Sắp xếp theo</span>
@@ -168,7 +186,6 @@
                     </c:if>
                 </div>
 
-                <%-- PHÂN TRANG --%>
                 <c:if test="${totalPages > 1}">
                     <nav class="mt-5">
                         <ul class="custom-pagination">
@@ -192,7 +209,6 @@
 
     <jsp:include page="footer.jsp" />
     
-    <%-- SCRIPT BỘ LỌC MASTER --%>
     <script>
         function updateFilter(key, value) {
             document.getElementById('form' + key.charAt(0).toUpperCase() + key.slice(1)).value = value;
@@ -205,17 +221,124 @@
             document.getElementById('formPage').value = '1';
             document.getElementById('masterFilterForm').submit();
         }
-        function executeSearch(txt) {
-            document.getElementById('formTxt').value = txt;
-            document.getElementById('formPage').value = '1';
-            document.getElementById('masterFilterForm').submit();
-        }
         function addToCartAsync(event, bookId) {
             event.preventDefault(); 
             fetch('add-to-cart-async?id=' + bookId).then(r => r.text()).then(data => {
                 document.getElementById('cart-badge').innerText = data; 
                 Swal.fire({ icon: 'success', title: 'Đã thêm vào giỏ!', showConfirmButton: false, timer: 1500, toast: true, position: 'top-end' });
             });
+        }
+
+        function loadHistory() {
+            let history = JSON.parse(localStorage.getItem('smartlib_history') || '[]');
+            let historyHtml = '';
+            if (history.length === 0) {
+                historyHtml = '<p class="text-muted small italic mb-0">Chưa có lịch sử tìm kiếm.</p>';
+            } else {
+                history.forEach(txt => {
+                    historyHtml += `<span class="search-tag" onclick="executeSearch('\${txt}')"><i class="bi bi-clock-history me-1"></i> \${txt}</span>`;
+                });
+            }
+            document.getElementById('history-list').innerHTML = historyHtml;
+        }
+
+        function saveHistory(txt) {
+            if (!txt.trim()) return;
+            let history = JSON.parse(localStorage.getItem('smartlib_history') || '[]');
+            history = history.filter(item => item !== txt); 
+            history.unshift(txt); 
+            if (history.length > 5) history.pop(); 
+            localStorage.setItem('smartlib_history', JSON.stringify(history));
+        }
+
+        function clearHistory() {
+            localStorage.removeItem('smartlib_history');
+            loadHistory();
+        }
+
+        // 🛑 ĐÃ FIX: CHẶT ĐỨT THÔNG TIN DANH MỤC TRƯỚC KHI TÌM KIẾM
+        function executeSearch(txt) {
+            if (txt.trim()) saveHistory(txt);
+            document.getElementById('formCateId').value = ''; // 🚀 Xóa cái này để tìm toàn bộ Web
+            document.getElementById('formTxt').value = txt;
+            document.getElementById('formPage').value = '1';
+            document.getElementById('masterFilterForm').submit();
+        }
+
+        function showDropdown() {
+            document.getElementById('searchDropdown').classList.remove('d-none');
+            loadHistory();
+            handleLiveSearch(document.getElementById('liveSearchInput').value);
+        }
+
+        document.addEventListener('click', function(event) {
+            const container = document.getElementById('searchContainer');
+            if (!container.contains(event.target)) {
+                document.getElementById('searchDropdown').classList.add('d-none');
+            }
+        });
+
+        // 🛑 ĐÃ FIX: HIỂN THỊ CẢ DANH MỤC CHUẨN SHOPEE
+        let searchTimeout = null;
+        function handleLiveSearch(txt) {
+            const defaultBox = document.getElementById('search-default-box');
+            const resultBox = document.getElementById('search-result-box');
+            const resultList = document.getElementById('live-search-results');
+
+            if (!txt.trim()) {
+                defaultBox.classList.remove('d-none');
+                resultBox.classList.add('d-none');
+                return;
+            }
+
+            defaultBox.classList.add('d-none');
+            resultBox.classList.remove('d-none');
+            resultList.innerHTML = '<div class="text-center p-3"><div class="spinner-border text-danger spinner-border-sm"></div> <span class="ms-2">Đang tìm...</span></div>';
+
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                fetch('live-search?q=' + encodeURIComponent(txt))
+                    .then(response => response.json()) 
+                    .then(data => {
+                        let html = '';
+                        
+                        // IN CÁC ĐỀ XUẤT DANH MỤC LÊN ĐẦU
+                        if(data.categories && data.categories.length > 0) {
+                            data.categories.forEach(c => {
+                                html += `<a href="javascript:void(0)" onclick="updateFilter('cateId', '\${c.id}')" class="live-item bg-light border-bottom">
+                                            <i class="bi bi-search me-2 text-muted"></i>
+                                            <span class="fw-bold text-dark">Tìm sách trong danh mục <span class="text-danger">"\${c.name}"</span></span>
+                                         </a>`;
+                            });
+                        }
+
+                        // IN SÁCH BÊN DƯỚI
+                        if(data.books && data.books.length > 0) {
+                            data.books.forEach(book => {
+                                let priceFmt = new Intl.NumberFormat('vi-VN').format(book.price) + ' đ';
+                                html += `
+                                <a href="book-detail?id=\${book.id}" class="live-item">
+                                    <img src="\${book.image}" onerror="this.src='img/default.jpg'">
+                                    <div>
+                                        <div class="fw-bold" style="font-size: 0.95rem; color: #173F5F;">\${book.title}</div>
+                                        <div class="text-danger fw-bold mt-1" style="font-size: 0.9rem;">\${priceFmt}</div>
+                                    </div>
+                                </a>`;
+                            });
+                        } 
+                        
+                        // NẾU TẤT CẢ ĐỀU RỖNG
+                        if((!data.books || data.books.length === 0) && (!data.categories || data.categories.length === 0)) {
+                            html = '<div class="p-3 text-muted text-center"><i class="bi bi-emoji-frown fs-4 d-block mb-2"></i>Không tìm thấy kết quả nào khớp!</div>';
+                        }
+                        
+                        resultList.innerHTML = html;
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        resultList.innerHTML = '<div class="p-3 text-danger text-center">Lỗi kết nối máy chủ!</div>';
+                    });
+            }, 300);
         }
     </script>
 </body>
