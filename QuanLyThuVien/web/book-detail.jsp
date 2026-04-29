@@ -253,7 +253,7 @@
             .then(res => res.json())
             .then(data => {
                 if(data.status === 'unauthorized') {
-                    window.location.href = 'login.jsp';
+                    window.location.href = 'login';
                     return;
                 }
                 if(data.status === 'success') {

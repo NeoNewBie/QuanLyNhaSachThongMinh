@@ -13,44 +13,41 @@ import javax.servlet.http.HttpServletResponse;
 
 @WebServlet("/api/webhook/payos")
 public class WebhookServlet extends HttpServlet {
+    
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        response.setContentType("text/plain;charset=UTF-8");
+        response.getWriter().write("✅ Webhook Smart Lib đang hoạt động bình thường!");
+    }
+    
+    @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
         
-        // 1. Đọc dữ liệu PayOS bắn về
         BufferedReader reader = request.getReader();
         StringBuilder sb = new StringBuilder();
         String line;
         while ((line = reader.readLine()) != null) sb.append(line);
         String json = sb.toString();
         
-        System.out.println("PayOS gửi tin: " + json);
-
-        // 🛑 ĐÃ FIX: Hút mã BILL bất chấp ngân hàng xóa dấu _ hay chèn rác
-        // Nhận diện "BILL447764", "BILL 447764", "BILL_447764"
+        // 1. THANH TOÁN MUA SÁCH (BILL)
         Matcher billMatcher = Pattern.compile("BILL[\\s_]*(\\d+)").matcher(json.toUpperCase());
         if (billMatcher.find()) {
-            // Ném cái số (ví dụ: 447764) vào kho tạm
             String billCode = billMatcher.group(1); 
             controller.EbookController.CheckPaymentStatusServlet.paidTransactions.add(billCode);
-            System.out.println("==> Đã đẩy mã Đơn Hàng vào kho tạm: BILL_" + billCode);
+            System.out.println("==> Đã nhận tiền Đơn Hàng: BILL_" + billCode);
         }
 
-        // 🛑 ĐÃ FIX: Hút mã MUACHAP bất chấp rác
-        // Nhận diện "MUACHAP U1 C2", "MUACHAPU1C2", v.v.
+        // 2. THANH TOÁN MỞ KHÓA TRUYỆN (MUACHAP)
         Matcher muaMatcher = Pattern.compile("MUACHAP[\\s_]*U[\\s_]*(\\d+)[\\s_]*C[\\s_]*(\\d+)").matcher(json.toUpperCase());
         if (muaMatcher.find()) {
             int uId = Integer.parseInt(muaMatcher.group(1));
             int cId = Integer.parseInt(muaMatcher.group(2));
-            
-            // Ném định dạng "U1_C2" vào kho tạm
             controller.EbookController.CheckPaymentStatusServlet.paidTransactions.add("U" + uId + "_C" + cId);
-            
-            // Gọi DAO mở khóa trong Database
             new ChapterDAO().unlockChapter(uId, cId);
-            System.out.println("==> ĐÃ MỞ KHÓA CHƯƠNG " + cId + " CHO SẾP HẢI!");
         }
         
-        // 4. Báo cho PayOS là đã nhận tin thành công
         response.setStatus(200);
         response.getWriter().write("{\"success\":true}");
     }

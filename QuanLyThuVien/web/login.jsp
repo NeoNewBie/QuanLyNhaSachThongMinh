@@ -34,7 +34,7 @@
                 <input type="text" name="user" class="form-control" placeholder="Tên đăng nhập" value="${cookie.cUser.value}" required>
             </div>
             <div class="mb-3">
-                <input type="password" name="pass" class="form-control" placeholder="Mật khẩu" value="${cookie.cPass.value}" required>
+                <input type="password" name="pass" class="form-control" placeholder="Mật khẩu" required>
             </div>
             
             <div class="form-check ms-3 mb-4">
@@ -45,8 +45,8 @@
             </div>
 
             <div class="d-flex justify-content-between px-2 mb-4">
-                <a href="forgot.jsp" class="text-decoration-none text-muted small">Quên mật khẩu?</a>
-                <a href="register.jsp" class="text-decoration-none text-danger fw-bold small">Chưa có tài khoản? Đăng ký</a>
+                <a href="forgot-password" class="text-decoration-none text-muted small">Quên mật khẩu?</a>
+                <a href="register" class="text-decoration-none text-danger fw-bold small">Chưa có tài khoản? Đăng ký</a>
             </div>
             <button type="submit" class="btn btn-auth shadow">Đăng nhập ngay</button>
         </form>

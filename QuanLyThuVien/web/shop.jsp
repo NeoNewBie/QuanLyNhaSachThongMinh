@@ -211,11 +211,17 @@
     
     <script>
         function updateFilter(key, value) {
+            // 🛑 TRỊ BỆNH 1: Trước khi bấm Danh mục, phải lấy đúng chữ đang hiển thị trên thanh tìm kiếm nhét vào Form ẩn
+            document.getElementById('formTxt').value = document.getElementById('liveSearchInput').value.trim();
+            
             document.getElementById('form' + key.charAt(0).toUpperCase() + key.slice(1)).value = value;
             if(key !== 'page') document.getElementById('formPage').value = '1';
             document.getElementById('masterFilterForm').submit();
         }
         function updatePrice(min, max) {
+            // 🛑 TRỊ BỆNH 1: Đồng bộ chữ trên thanh tìm kiếm vào Form ẩn trước khi lọc Giá
+            document.getElementById('formTxt').value = document.getElementById('liveSearchInput').value.trim();
+
             document.getElementById('formMin').value = min;
             document.getElementById('formMax').value = max;
             document.getElementById('formPage').value = '1';
@@ -259,12 +265,16 @@
         // 🛑 ĐÃ FIX: CHẶT ĐỨT THÔNG TIN DANH MỤC TRƯỚC KHI TÌM KIẾM
         function executeSearch(txt) {
             if (txt.trim()) saveHistory(txt);
-            document.getElementById('formCateId').value = ''; // 🚀 Xóa cái này để tìm toàn bộ Web
-            document.getElementById('formTxt').value = txt;
+            
+            // 🛑 TRỊ BỆNH 2: Khi khách tìm từ khóa mới, đập bỏ TẤT CẢ bộ lọc cũ (Danh mục + Giá min + Giá max)
+            document.getElementById('formCateId').value = ''; 
+            document.getElementById('formMin').value = '';    
+            document.getElementById('formMax').value = '';    
+            
+            document.getElementById('formTxt').value = txt.trim();
             document.getElementById('formPage').value = '1';
             document.getElementById('masterFilterForm').submit();
         }
-
         function showDropdown() {
             document.getElementById('searchDropdown').classList.remove('d-none');
             loadHistory();

@@ -1,6 +1,9 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%-- 🛑 THÊM THƯ VIỆN FN ĐỂ XỬ LÝ CHUỖI --%>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -31,7 +34,6 @@
         .track-step.canceled .track-icon { background: #dc3545; color: #fff; box-shadow: 0 0 0 4px rgba(220, 53, 69, 0.2); }
         .track-step.canceled .track-text { color: #dc3545; }
 
-        /* Style cho nút Đã nhận hàng */
         .btn-received { background: #198754; color: white; border: none; padding: 6px 20px; border-radius: 50px; font-weight: 700; transition: 0.3s; box-shadow: 0 4px 15px rgba(25, 135, 84, 0.3); }
         .btn-received:hover { background: #157347; transform: translateY(-2px); color: white; }
     </style>
@@ -54,13 +56,13 @@
                     <p class="mb-0 opacity-75"><i class="bi bi-calendar-check me-2"></i>Ngày đặt: <fmt:formatDate value="${order.orderDate}" pattern="HH:mm - dd/MM/yyyy"/></p>
                 </div>
                 <div>
-                    <%-- 🛑 CẬP NHẬT LOGIC THEO DATABASE MỚI NHẤT (4: Thành công, 5: Hủy) --%>
+                    <%-- 🛑 ĐÃ FIX CHUẨN: Dùng fn:startsWith để bắt mọi thể loại 2_QR, 4_QR --%>
                     <c:choose>
                         <c:when test="${order.status == '0'}"><span class="badge bg-warning text-dark badge-status shadow-sm"><i class="bi bi-hourglass-split me-1"></i>Chờ xác nhận</span></c:when>
                         <c:when test="${order.status == '1'}"><span class="badge bg-info text-dark badge-status shadow-sm"><i class="bi bi-wallet2 me-1"></i>Đã thanh toán (QR)</span></c:when>
-                        <c:when test="${order.status == '2'}"><span class="badge bg-primary badge-status shadow-sm"><i class="bi bi-truck me-1"></i>Đang giao hàng</span></c:when>
-                        <c:when test="${order.status == '4'}"><span class="badge bg-success badge-status shadow-sm"><i class="bi bi-check-circle me-1"></i>Đã giao thành công</span></c:when>
-                        <c:when test="${order.status == '5'}"><span class="badge bg-danger badge-status shadow-sm"><i class="bi bi-x-circle me-1"></i>Đã hủy</span></c:when>
+                        <c:when test="${fn:startsWith(order.status, '2')}"><span class="badge bg-primary badge-status shadow-sm"><i class="bi bi-truck me-1"></i>Đang giao hàng</span></c:when>
+                        <c:when test="${fn:startsWith(order.status, '4')}"><span class="badge bg-success badge-status shadow-sm"><i class="bi bi-check-circle me-1"></i>Đã giao thành công</span></c:when>
+                        <c:when test="${fn:startsWith(order.status, '5')}"><span class="badge bg-danger badge-status shadow-sm"><i class="bi bi-x-circle me-1"></i>Đã hủy</span></c:when>
                         <c:otherwise><span class="badge bg-secondary badge-status shadow-sm">${order.status}</span></c:otherwise>
                     </c:choose>
                 </div>
@@ -71,17 +73,17 @@
                 <c:choose>
                     <c:when test="${order.status == '0'}"><c:set var="progressWidth" value="12%" /></c:when>
                     <c:when test="${order.status == '1'}"><c:set var="progressWidth" value="40%" /></c:when>
-                    <c:when test="${order.status == '2'}"><c:set var="progressWidth" value="65%" /></c:when>
-                    <c:when test="${order.status == '4'}"><c:set var="progressWidth" value="100%" /></c:when>
+                    <c:when test="${fn:startsWith(order.status, '2')}"><c:set var="progressWidth" value="65%" /></c:when>
+                    <c:when test="${fn:startsWith(order.status, '4')}"><c:set var="progressWidth" value="100%" /></c:when>
                 </c:choose>
 
                 <%-- Nếu khác 5 (Không bị hủy) thì mới hiện thanh chạy --%>
-                <c:if test="${order.status != '5'}">
+                <c:if test="${!fn:startsWith(order.status, '5')}">
                     <div class="tracking-line"><div class="tracking-progress" style="width: ${progressWidth};"></div></div>
                 </c:if>
 
                 <%-- KHI ĐƠN BỊ HỦY --%>
-                <c:if test="${order.status == '5'}">
+                <c:if test="${fn:startsWith(order.status, '5')}">
                     <div class="tracking-line"><div class="tracking-progress" style="width: 100%; background: #dc3545;"></div></div>
                     <div class="track-step active"><div class="track-icon"><i class="bi bi-receipt"></i></div><div class="track-text">Đã đặt hàng</div></div>
                     <div class="track-step w-75 float-end canceled"><div class="track-icon mx-auto"><i class="bi bi-x-circle"></i></div><div class="track-text text-center mt-2">Đơn hàng đã bị hủy bỏ</div></div>
@@ -89,20 +91,20 @@
                 </c:if>
 
                 <%-- KHI ĐƠN BÌNH THƯỜNG --%>
-                <c:if test="${order.status != '5'}">
+                <c:if test="${!fn:startsWith(order.status, '5')}">
                     <div class="track-step active">
                         <div class="track-icon"><i class="bi bi-receipt"></i></div>
                         <div class="track-text">Chờ xác nhận<br><small class="text-muted fw-normal"><fmt:formatDate value="${order.orderDate}" pattern="dd/MM"/></small></div>
                     </div>
-                    <div class="track-step ${order.status >= '1' ? 'active' : ''}">
+                    <div class="track-step ${order.status != '0' ? 'active' : ''}">
                         <div class="track-icon"><i class="bi bi-box-seam"></i></div>
                         <div class="track-text">Đã duyệt & Đóng gói</div>
                     </div>
-                    <div class="track-step ${order.status >= '2' ? 'active' : ''}">
+                    <div class="track-step ${fn:startsWith(order.status, '2') || fn:startsWith(order.status, '4') ? 'active' : ''}">
                         <div class="track-icon"><i class="bi bi-truck"></i></div>
                         <div class="track-text">Đang giao hàng</div>
                     </div>
-                    <div class="track-step ${order.status == '4' ? 'active' : ''}">
+                    <div class="track-step ${fn:startsWith(order.status, '4') ? 'active' : ''}">
                         <div class="track-icon"><i class="bi bi-house-check"></i></div>
                         <div class="track-text">Đã nhận hàng</div>
                     </div>
@@ -125,16 +127,18 @@
                         <div class="p-3 bg-light rounded-3 h-100 border border-light d-flex flex-column justify-content-center">
                             <p class="mb-2 text-secondary fs-6">Phương thức: 
                                 <strong class="text-dark">
-                                    <%-- 🛑 ĐÃ FIX CHUẨN: Chỉ Status 1 mới là QR, còn lại là COD --%>
+                                    <%-- 🛑 FIX CHUẨN: Bắt mọi trạng thái chứa chữ QR --%>
                                     <c:choose>
-                                        <c:when test="${order.status == '1'}">Thanh toán Chuyển khoản (QR)</c:when>
+                                        <c:when test="${order.status == '1' || fn:contains(order.status, 'QR')}">Thanh toán Chuyển khoản (QR)</c:when>
                                         <c:otherwise>Thanh toán tiền mặt khi nhận hàng (COD)</c:otherwise>
                                     </c:choose>
                                 </strong>
                             </p>
                             <p class="mb-0 text-secondary fs-6">Thanh toán: 
-                                <strong class="${order.status == '1' || order.status == '4' ? 'text-success' : 'text-warning'}">
-                                    ${order.status == '1' || order.status == '4' ? 'Đã thu tiền' : 'Chờ thu tiền (Khi nhận hàng)'}
+                                <%-- 🛑 FIX CHUẨN: Thành công(4) hoặc QR thì auto Đã thu tiền --%>
+                                <c:set var="isPaid" value="${order.status == '1' || fn:contains(order.status, 'QR') || fn:startsWith(order.status, '4')}" />
+                                <strong class="${isPaid ? 'text-success' : 'text-warning'}">
+                                    ${isPaid ? 'Đã thu tiền' : 'Chờ thu tiền (Khi nhận hàng)'}
                                 </strong>
                             </p>
                         </div>
@@ -182,15 +186,15 @@
                         <p class="small text-secondary mb-1">- Khách hàng mua sách vật lý vui lòng nhận tại quầy thư viện UTE.</p>
                         <p class="small text-secondary mb-4">- Hỗ trợ kỹ thuật / Hoàn tiền: <strong class="text-dark">0909 123 456</strong></p>
 
-                        <%-- 🛑 NÚT HỦY ĐƠN: Cho phép hủy đơn ở trạng thái 0, 1, 2 --%>
-                        <c:if test="${order.status == '0' || order.status == '1' || order.status == '2'}">
+                        <%-- 🛑 NÚT HỦY ĐƠN: --%>
+                        <c:if test="${order.status == '0' || order.status == '1' || fn:startsWith(order.status, '2')}">
                             <button type="button" onclick="confirmCancelOrder(${order.id})" class="btn btn-outline-danger btn-sm rounded-pill fw-bold px-4 py-2 shadow-sm me-2 mb-2">
                                 <i class="bi bi-trash3-fill me-1"></i> YÊU CẦU HỦY ĐƠN
                             </button>
                         </c:if>
 
-                        <%-- 🛑 THÊM VÀO: NÚT ĐÃ NHẬN HÀNG DÀNH CHO KHÁCH (Khi đang giao) --%>
-                        <c:if test="${order.status == '2'}">
+                        <%-- 🛑 NÚT ĐÃ NHẬN HÀNG: --%>
+                        <c:if test="${fn:startsWith(order.status, '2')}">
                             <button type="button" onclick="confirmReceivedOrder(${order.id})" class="btn-received mb-2">
                                 <i class="bi bi-box2-heart-fill me-1"></i> ĐÃ NHẬN ĐƯỢC HÀNG
                             </button>
@@ -237,7 +241,6 @@
             })
         }
 
-        // 🛑 SCRIPT CHO NÚT XÁC NHẬN NHẬN HÀNG MỚI THÊM
         function confirmReceivedOrder(orderId) {
             Swal.fire({
                 title: 'Xác nhận đã nhận hàng?',
@@ -250,7 +253,6 @@
                 cancelButtonText: 'Chưa nhận'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    // Gọi sang Servlet CompleteOrder để Update Status thành 4
                     window.location.href = "complete-order?id=" + orderId;
                 }
             })

@@ -1,4 +1,4 @@
-package controller.CartPaymentController;
+package controller.AccountController;
 
 import java.io.IOException;
 import javax.servlet.ServletException;
@@ -17,7 +17,7 @@ public class VerifyOTPServlet extends HttpServlet {
         // Nếu chưa có email trong session thì không cho vào trang này
         HttpSession session = request.getSession();
         if (session.getAttribute("email") == null) {
-            response.sendRedirect("forgot.jsp");
+            response.sendRedirect("forgot");
             return;
         }
         request.getRequestDispatcher("verify-otp.jsp").forward(request, response);
@@ -49,7 +49,7 @@ public class VerifyOTPServlet extends HttpServlet {
             session.removeAttribute("otp");
             // Đánh dấu đã verify để ResetPasswordServlet biết
             session.setAttribute("otpVerified", true);
-            response.sendRedirect("reset-password.jsp");
+            response.sendRedirect("reset-password");
         } else {
             request.setAttribute("error", "Mã xác thực không chính xác, vui lòng thử lại!");
             request.getRequestDispatcher("verify-otp.jsp").forward(request, response);

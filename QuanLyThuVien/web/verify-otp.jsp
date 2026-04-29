@@ -67,7 +67,7 @@
         <a href="forgot-password" class="resend-link" id="resendBtn">GỬI LẠI MÃ MỚI</a>
         
         <div class="mt-4">
-            <a href="login.jsp" class="text-decoration-none text-muted small">← Quay lại Đăng nhập</a>
+            <a href="login" class="text-decoration-none text-muted small">← Quay lại Đăng nhập</a>
         </div>
     </div>
 

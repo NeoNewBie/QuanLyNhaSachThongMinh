@@ -15,6 +15,13 @@ import javax.servlet.http.Part;
 
 @WebServlet(name = "UpdateProfileServlet", urlPatterns = {"/update-profile"})
 public class UpdateProfileServlet extends HttpServlet {
+    // 🛑 THÊM HÀM NÀY LÀM BẢO HIỂM CHỐNG GÕ LINK BẬY
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        // Đá về trang Profile nếu ai đó cố tình gõ link này trên thanh URL
+        response.sendRedirect("profile");
+    }
 
     @Override
 protected void doPost(HttpServletRequest request, HttpServletResponse response)

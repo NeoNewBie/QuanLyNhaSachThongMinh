@@ -13,6 +13,13 @@ import javax.servlet.http.HttpSession;
 
 @WebServlet(name = "BorrowServlet", urlPatterns = {"/borrow"})
 public class BorrowServlet extends HttpServlet {
+    // 🛑 BẢO HIỂM: Thêm hàm doGet để chống lỗi 405 khi khách gõ link trực tiếp
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        // Không cho xem giao diện gì ở đây cả, đá thẳng về trang chủ
+        response.sendRedirect("home");
+    }
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {

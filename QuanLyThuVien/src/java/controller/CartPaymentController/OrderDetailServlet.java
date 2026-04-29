@@ -24,7 +24,7 @@ public class OrderDetailServlet extends HttpServlet {
         User acc = (User) session.getAttribute("acc");
         
         if (acc == null) {
-            response.sendRedirect("login.jsp");
+            response.sendRedirect("login");
             return;
         }
 

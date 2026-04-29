@@ -22,7 +22,7 @@ public class CheckoutServlet extends HttpServlet {
         
         HttpSession session = request.getSession();
         if (session.getAttribute("acc") == null) {
-            response.sendRedirect("login.jsp");
+            response.sendRedirect("login");
             return;
         }
 

@@ -49,38 +49,51 @@ public class ManageOrderServlet extends HttpServlet {
 
     private void handleApprove(HttpServletRequest request, HttpServletResponse response, String idStr, String status) 
             throws IOException {
-        
         OrderDAO dao = new OrderDAO();
         NotificationDAO notiDao = new NotificationDAO();
         int orderId = 0;
         
         try {
             orderId = Integer.parseInt(idStr.replaceAll("[^0-9]", ""));
-            dao.updateOrderStatus(orderId, status);
+            
+            // 1. Lấy đơn hàng ra check xem có phải QR không
             Order currentOrder = dao.getOrderById(orderId);
+            boolean isQR = (currentOrder != null && (currentOrder.getStatus().equals("1") || currentOrder.getStatus().contains("QR")));
+            
+            // 2. Nếu là QR thì phải ép thêm đuôi "_QR" để web không bị mất trí nhớ
+            String finalStatus = status;
+            if (isQR && !finalStatus.contains("QR")) {
+                finalStatus = finalStatus + "_QR";
+            }
+            
+            // 3. Update vào DB (Lúc này đơn QR sẽ lưu là 2_QR)
+            dao.updateOrderStatus(orderId, finalStatus);
             
             if (currentOrder != null) {
-                String msg = "Đơn hàng #ORD-" + orderId + " đã được duyệt. Sách đã sẵn sàng chờ sếp qua lấy!";
+                String msg = "Đơn hàng #ORD-" + orderId + " đã được duyệt. Đơn hàng đang vận chuyển đến địa chỉ của bạn!";
                 notiDao.addNotification(currentOrder.getUserID(), msg);
 
-                if ("2".equals(status) || status.toLowerCase().contains("giao")) {
+                // 4. Gửi Mail cho luồng QR
+                if (isQR && (finalStatus.startsWith("2") || finalStatus.toLowerCase().contains("giao"))) {
                     String userEmail = dao.getUserEmailByOrderId(orderId);
                     if (userEmail != null && !userEmail.isEmpty()) {
                         String subject = "Smart Lib - Đơn hàng #" + orderId + " đã sẵn sàng!";
-                        String content = "Chào sếp, đơn hàng của sếp đã được thủ thư duyệt thành công. Mời sếp qua thư viện nhận sách nhé!";
-                        // Gọi hàm gửi mail
+                        String content = "<div style='font-family: Arial, sans-serif; line-height: 1.6; color: #333;'>" +
+                                "<h2 style='color: #173F5F;'>SÁCH ĐÃ SẴN SÀNG!</h2>" +
+                                "<p>Chào sếp, đơn hàng <b>#ORD-" + orderId + "</b> (đã thanh toán qua mã QR) đã được thủ thư duyệt và đóng gói cẩn thận.</p>" +
+                                "<p>Đơn hàng đang vận chuyển đến địa chỉ của bạn, bạn đợi shipper giao hàng tới nhé!</p>" +
+                                "<hr><small>Đây là thư tự động từ hệ thống Smart Library.</small></div>";
+                        
                         utils.EmailUtil.sendEmail(userEmail, subject, content);
                     }
                 }
             }
             
-            // 🛑 NẾU THÀNH CÔNG: Gửi thông báo xanh
             request.getSession().setAttribute("sysMsg", "Duyệt đơn #" + orderId + " thành công!");
             request.getSession().setAttribute("sysMsgType", "success");
             
         } catch (Exception e) {
             e.printStackTrace();
-            // 🛑 NẾU LỖI: Bắt sống lỗi và ném lên màn hình!
             request.getSession().setAttribute("sysMsg", "LỖI HỆ THỐNG: " + e.toString());
             request.getSession().setAttribute("sysMsgType", "error");
         }

@@ -27,7 +27,12 @@ public class ChatbotServlet extends HttpServlet {
             return "";
         }
     }
-
+    // 🛑 BẢO HIỂM CHỐNG LỖI 405: Khách gõ link bậy thì đá về trang chủ
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        response.sendRedirect("home");
+    }
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {

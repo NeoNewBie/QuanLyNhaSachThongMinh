@@ -139,9 +139,9 @@
                 <c:choose>
                     <c:when test="${sessionScope.acc == null}">
                         <div class="d-flex gap-3">
-                            <a href="login.jsp" class="action-link"><i class="bi bi-person-lock"></i> ĐĂNG NHẬP</a>
+                            <a href="login" class="action-link"><i class="bi bi-person-lock"></i> ĐĂNG NHẬP</a>
                             <span class="text-muted">|</span>
-                            <a href="register.jsp" class="action-link"><i class="bi bi-person-plus"></i> ĐĂNG KÝ</a>
+                            <a href="register" class="action-link"><i class="bi bi-person-plus"></i> ĐĂNG KÝ</a>
                         </div>
                     </c:when>
                     <c:otherwise>
@@ -216,7 +216,7 @@
                                 
                                 <li><span class="dropdown-header">Cá nhân</span></li>
                                 <li><a class="dropdown-item" href="profile"><i class="bi bi-person-vcard me-2"></i> Hồ sơ của tôi</a></li>
-                                <li><a class="dropdown-item" href="change-password.jsp"><i class="bi bi-shield-lock me-2"></i> Đổi mật khẩu</a></li>
+                                <li><a class="dropdown-item" href="change-password"><i class="bi bi-shield-lock me-2"></i> Đổi mật khẩu</a></li>
                                 
                                 <li><hr class="dropdown-divider"></li>
                                 

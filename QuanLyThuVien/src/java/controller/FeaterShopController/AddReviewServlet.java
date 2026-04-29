@@ -13,7 +13,12 @@ import javax.servlet.http.HttpSession;
 
 @WebServlet(name = "AddReviewServlet", urlPatterns = {"/add-review"})
 public class AddReviewServlet extends HttpServlet {
-
+    // 🛑 BẢO HIỂM CHỐNG LỖI 405: Khách gõ link bậy thì đá về trang chủ
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        response.sendRedirect("home");
+    }
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {

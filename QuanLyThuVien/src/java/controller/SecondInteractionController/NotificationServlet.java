@@ -18,7 +18,7 @@ public class NotificationServlet extends HttpServlet {
             throws ServletException, IOException {
         User acc = (User) request.getSession().getAttribute("acc");
         if (acc == null) {
-            response.sendRedirect("login.jsp");
+            response.sendRedirect("login");
             return;
         }
         

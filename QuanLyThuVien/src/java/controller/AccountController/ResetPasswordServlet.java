@@ -12,6 +12,17 @@ import javax.servlet.http.HttpSession;
 
 @WebServlet(name = "ResetPasswordServlet", urlPatterns = {"/reset-password"})
 public class ResetPasswordServlet extends HttpServlet {
+    // 🛑 THÊM HÀM NÀY VÀO ĐỂ KHÁCH VÀO XEM ĐƯỢC GIAO DIỆN
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        // Kiểm tra xem có email trong session không (chống đi cửa sau)
+        if (request.getSession().getAttribute("email") == null) {
+            response.sendRedirect("login");
+        } else {
+            request.getRequestDispatcher("reset-password.jsp").forward(request, response);
+        }
+    }
     
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) 

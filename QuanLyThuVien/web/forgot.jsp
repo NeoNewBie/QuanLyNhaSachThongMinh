@@ -1,4 +1,5 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -45,7 +46,7 @@
     </form>
     
     <div class="mt-4 border-top pt-3">
-        <a href="login.jsp" class="text-decoration-none text-muted small fw-bold">
+        <a href="login" class="text-decoration-none text-muted small fw-bold">
             <i class="bi bi-arrow-left me-1"></i> QUAY LẠI ĐĂNG NHẬP
         </a>
     </div>

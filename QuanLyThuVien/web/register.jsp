@@ -37,7 +37,7 @@
         </form>
 
         <div class="text-center mt-4">
-            <p class="small text-muted">Đã có tài khoản? <a href="login.jsp" class="text-danger fw-bold text-decoration-none">Đăng nhập</a></p>
+            <p class="small text-muted">Đã có tài khoản? <a href="login" class="text-danger fw-bold text-decoration-none">Đăng nhập</a></p>
         </div>
     </div>
 </body>

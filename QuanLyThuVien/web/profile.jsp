@@ -150,7 +150,7 @@
                                         <button type="submit" class="btn-update">LƯU THAY ĐỔI</button>
                                     </div>
                                     <div class="col-md-6">
-                                        <a href="change-password.jsp" class="btn-changepass">
+                                        <a href="change-password" class="btn-changepass">
                                             <i class="bi bi-key-fill me-2"></i> ĐỔI MẬT KHẨU
                                         </a>
                                     </div>

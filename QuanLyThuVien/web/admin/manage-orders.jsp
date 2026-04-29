@@ -1,6 +1,7 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -80,16 +81,14 @@
                                             <c:when test="${o.status == '1'}">
                                                 <span class="badge bg-info text-dark px-3 py-2 rounded-pill"><i class="bi bi-wallet2 me-1"></i> Đã thanh toán</span>
                                             </c:when>
-                                            <c:when test="${o.status == '2'}">
+                                            <%-- ĐÃ FIX: fn:startsWith sẽ tóm cổ được cả số "2" và chữ "2_QR" --%>
+                                            <c:when test="${fn:startsWith(o.status, '2')}">
                                                 <span class="badge bg-primary px-3 py-2 rounded-pill"><i class="bi bi-truck me-1"></i> Đang giao hàng</span>
                                             </c:when>
-                                            
-                                            <%-- 🛑 ĐÃ FIX LỖI TYPO: Đổi 'order.status' thành 'o.status' --%>
-                                            <c:when test="${o.status == '3' || o.status == '4'}">
+                                            <c:when test="${fn:startsWith(o.status, '4')}">
                                                 <span class="badge bg-success rounded-pill px-3 py-2 shadow-sm"><i class="bi bi-check-circle-fill me-1"></i> Giao thành công</span>
                                             </c:when>
-                                            
-                                            <c:when test="${o.status == '5'}">
+                                            <c:when test="${fn:startsWith(o.status, '5')}">
                                                 <span class="badge bg-danger px-3 py-2 rounded-pill"><i class="bi bi-x-circle me-1"></i> Đã hủy</span>
                                             </c:when>
                                             <c:otherwise>
